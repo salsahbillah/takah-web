@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TAKAH - Frontend Development Flow & Task List
 
 ## Project Information
@@ -333,3 +334,7 @@ Completed
 | Final Testing      |    ⏳   |
 | Final Commit       |    ⏳   |
 | Deploy             |    ⏳   |
+=======
+# takah-web
+Frontend Smart Letter Management System built with React, Vite, Tailwind CSS, and Golang REST API.
+>>>>>>> 3e54b63bdb414360169c9a110afd47cebf422ac1
