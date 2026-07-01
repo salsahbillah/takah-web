@@ -282,7 +282,7 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
-        <div className="mx-auto w-full max-w-[1180px]">
+        <div className="mx-auto w-full max-w-295">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">
             Memuat data dashboard...
           </div>
@@ -293,8 +293,8 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
-      <div className="mx-auto w-full max-w-[1180px]">
-        <div className="mb-4 rounded-2xl bg-gradient-to-r from-[#002248] to-[#2680BE] p-5 text-white shadow-md transition hover:shadow-lg">
+      <div className="mx-auto w-full max-w-295">
+        <div className="mb-4 rounded-2xl bg-linear-to-r from-[#002248] to-[#2680BE] p-5 text-white shadow-md transition hover:shadow-lg">
           <p className="text-xs text-white/75">Selamat datang kembali</p>
           <h2 className="mt-1 text-xl font-extrabold">
             {user?.name || "Admin Takah"} 👋
@@ -381,10 +381,10 @@ function Dashboard() {
                 </select>
               </div>
 
-              <div className="max-h-[320px] w-full overflow-auto rounded-xl border border-slate-100 bg-slate-50 p-3">
+              <div className="max-h-80 w-full overflow-auto rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <svg
                   viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                  className="h-[280px] min-w-[920px]"
+                  className="h-70 "
                   role="img"
                   aria-label="Grafik surat per bulan"
                 >
@@ -506,7 +506,7 @@ function Dashboard() {
               </div>
 
               <div className="overflow-x-auto rounded-xl border border-slate-100">
-                <table className="w-full min-w-[680px] border-collapse text-left text-xs">
+                <table className="w-full min-w-170 border-collapse text-left text-xs">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
                       <th className="px-4 py-3 font-bold">No. Surat</th>
