@@ -15,7 +15,7 @@ function Login() {
   const { login } = useAuth();
 
   const [email, setEmail] = useState("admin@takah.com");
-  const [password, setPassword] = useState("password123");
+  const [password, setPassword] = useState("Admin1234");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ function Login() {
   const handleQuickLogin = (type) => {
     if (type === "admin") {
       setEmail("admin@takah.com");
-      setPassword("password123");
+      setPassword("Admin1234");
     } else {
       setEmail("user@takah.com");
       setPassword("password123");

@@ -24,6 +24,11 @@ export function AuthProvider({ children }) {
     setUser(userValue);
   };
 
+  const updateUser = (userValue) => {
+    localStorage.setItem("user", JSON.stringify(userValue));
+    setUser(userValue);
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -40,6 +45,7 @@ export function AuthProvider({ children }) {
         role: user?.role,
         isAuthenticated: !!token,
         login,
+        updateUser,
         logout,
       }}
     >

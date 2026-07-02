@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Edit,
@@ -8,91 +8,94 @@ import {
   Search,
   Settings2,
   Trash2,
+  X,
   XCircle,
 } from "lucide-react";
 
+import { getAllTemplateSurat } from "../../services/templateSuratService";
+import {
+  createParameterSurat,
+  deleteParameterSurat,
+  getAllParameterSurat,
+  updateParameterSurat,
+} from "../../services/parameterSuratService";
+
+const initialForm = {
+  template_id: "",
+  parameter_name: "",
+  parameter_key: "",
+  input_type: "text",
+  is_required: true,
+};
+
 function ParameterSurat() {
+  const [parameters, setParameters] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [form, setForm] = useState(initialForm);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [templateFilter, setTemplateFilter] = useState("semua");
   const [requiredFilter, setRequiredFilter] = useState("semua");
 
-  const parameterData = [
-    {
-      id: 1,
-      templateName: "Surat Undangan",
-      parameterName: "Nama Tujuan",
-      parameterKey: "nama_tujuan",
-      inputType: "text",
-      isRequired: true,
-    },
-    {
-      id: 2,
-      templateName: "Surat Undangan",
-      parameterName: "Nama Kegiatan",
-      parameterKey: "nama_kegiatan",
-      inputType: "text",
-      isRequired: true,
-    },
-    {
-      id: 3,
-      templateName: "Surat Undangan",
-      parameterName: "Tanggal Kegiatan",
-      parameterKey: "tanggal_kegiatan",
-      inputType: "date",
-      isRequired: true,
-    },
-    {
-      id: 4,
-      templateName: "Surat Keterangan Kerja",
-      parameterName: "Nama Pegawai",
-      parameterKey: "nama_pegawai",
-      inputType: "text",
-      isRequired: true,
-    },
-    {
-      id: 5,
-      templateName: "Surat Keterangan Kerja",
-      parameterName: "Jabatan",
-      parameterKey: "jabatan",
-      inputType: "text",
-      isRequired: false,
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editId, setEditId] = useState(null);
 
-  const templateOptions = [
-    "Surat Undangan",
-    "Surat Keterangan Kerja",
-    "Surat Penugasan",
-    "Memorandum",
-  ];
+  const fetchParameters = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllParameterSurat();
+      setParameters(response.data || []);
+    } catch (error) {
+      console.error("Gagal mengambil data parameter surat:", error);
+      setParameters([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await getAllTemplateSurat();
+      setTemplates(response.data || []);
+    } catch (error) {
+      console.error("Gagal mengambil data template surat:", error);
+      setTemplates([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchParameters();
+    fetchTemplates();
+  }, []);
 
   const filteredData = useMemo(() => {
-    return parameterData.filter((item) => {
+    return parameters.filter((item) => {
       const search = searchQuery.toLowerCase();
 
       const matchSearch =
-        item.templateName.toLowerCase().includes(search) ||
-        item.parameterName.toLowerCase().includes(search) ||
-        item.parameterKey.toLowerCase().includes(search) ||
-        item.inputType.toLowerCase().includes(search);
+        item.template_name?.toLowerCase().includes(search) ||
+        item.parameter_name?.toLowerCase().includes(search) ||
+        item.parameter_key?.toLowerCase().includes(search) ||
+        item.input_type?.toLowerCase().includes(search);
 
       const matchTemplate =
-        templateFilter === "semua" || item.templateName === templateFilter;
+        templateFilter === "semua" ||
+        String(item.template_id) === String(templateFilter);
 
       const matchRequired =
         requiredFilter === "semua" ||
-        (requiredFilter === "wajib" && item.isRequired) ||
-        (requiredFilter === "opsional" && !item.isRequired);
+        (requiredFilter === "wajib" && item.is_required) ||
+        (requiredFilter === "opsional" && !item.is_required);
 
       return matchSearch && matchTemplate && matchRequired;
     });
-  }, [searchQuery, templateFilter, requiredFilter]);
+  }, [parameters, searchQuery, templateFilter, requiredFilter]);
 
-  const totalParameter = parameterData.length;
-  const totalRequired = parameterData.filter((item) => item.isRequired).length;
-  const totalOptional = parameterData.filter((item) => !item.isRequired).length;
-  const totalTemplate = new Set(parameterData.map((item) => item.templateName))
-    .size;
+  const totalParameter = parameters.length;
+  const totalRequired = parameters.filter((item) => item.is_required).length;
+  const totalOptional = parameters.filter((item) => !item.is_required).length;
+  const totalTemplate = new Set(parameters.map((item) => item.template_id)).size;
 
   const summaryCards = [
     {
@@ -132,9 +135,90 @@ function ParameterSurat() {
       number: "bg-purple-100 text-purple-700",
       textarea: "bg-orange-100 text-orange-700",
       time: "bg-pink-100 text-pink-700",
+      email: "bg-cyan-100 text-cyan-700",
     };
 
     return styles[type] || "bg-slate-100 text-slate-700";
+  };
+
+  const openAddModal = () => {
+    setEditId(null);
+    setForm(initialForm);
+    setShowModal(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditId(item.id);
+    setForm({
+      template_id: item.template_id,
+      parameter_name: item.parameter_name,
+      parameter_key: item.parameter_key,
+      input_type: item.input_type,
+      is_required: item.is_required,
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditId(null);
+    setForm(initialForm);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]:
+        name === "template_id"
+          ? Number(value)
+          : name === "is_required"
+          ? value === "true"
+          : value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const payload = {
+        template_id: Number(form.template_id),
+        parameter_name: form.parameter_name,
+        parameter_key: form.parameter_key,
+        input_type: form.input_type,
+        is_required: Boolean(form.is_required),
+      };
+
+      if (editId) {
+        await updateParameterSurat(editId, payload);
+      } else {
+        await createParameterSurat(payload);
+      }
+
+      closeModal();
+      fetchParameters();
+    } catch (error) {
+      console.error("Gagal menyimpan parameter surat:", error);
+      alert("Gagal menyimpan parameter surat");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm(
+      "Yakin ingin menghapus parameter surat ini?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deleteParameterSurat(id);
+      fetchParameters();
+    } catch (error) {
+      console.error("Gagal menghapus parameter surat:", error);
+      alert("Gagal menghapus parameter surat");
+    }
   };
 
   return (
@@ -153,6 +237,7 @@ function ParameterSurat() {
 
           <button
             type="button"
+            onClick={openAddModal}
             className="flex w-fit items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
           >
             <Plus size={16} />
@@ -219,9 +304,9 @@ function ParameterSurat() {
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-600 outline-none transition hover:border-blue-300 focus:border-blue-400"
               >
                 <option value="semua">Semua Template</option>
-                {templateOptions.map((template) => (
-                  <option key={template} value={template}>
-                    {template}
+                {templates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.template_name}
                   </option>
                 ))}
               </select>
@@ -239,7 +324,7 @@ function ParameterSurat() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full min-w-[900px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[950px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
                   <th className="px-4 py-3 font-bold">Template</th>
@@ -247,85 +332,101 @@ function ParameterSurat() {
                   <th className="px-4 py-3 font-bold">Key Parameter</th>
                   <th className="px-4 py-3 font-bold">Tipe Input</th>
                   <th className="px-4 py-3 font-bold">Status</th>
+                  <th className="px-4 py-3 font-bold">Dibuat</th>
                   <th className="px-4 py-3 text-right font-bold">Aksi</th>
                 </tr>
               </thead>
 
               <tbody>
-                {filteredData.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                          <FileText size={17} />
-                        </div>
-                        <span className="font-bold text-slate-800">
-                          {item.templateName}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 font-semibold text-slate-800">
-                      {item.parameterName}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="rounded-lg bg-slate-100 px-3 py-1 font-mono text-[11px] font-bold text-slate-700">
-                        {item.parameterKey}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-3 py-1 text-[11px] font-bold capitalize ${getInputTypeBadge(
-                          item.inputType
-                        )}`}
-                      >
-                        {item.inputType}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-3 py-1 text-[11px] font-bold ${
-                          item.isRequired
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-orange-100 text-orange-700"
-                        }`}
-                      >
-                        {item.isRequired ? "Wajib" : "Opsional"}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 hover:shadow-sm"
-                          title="Edit"
-                        >
-                          <Edit size={15} />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:shadow-sm"
-                          title="Hapus"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-
-                {filteredData.length === 0 && (
+                {loading ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
+                      className="px-4 py-8 text-center text-slate-500"
+                    >
+                      Memuat data parameter surat...
+                    </td>
+                  </tr>
+                ) : filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                            <FileText size={17} />
+                          </div>
+                          <span className="font-bold text-slate-800">
+                            {item.template_name}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-3 font-semibold text-slate-800">
+                        {item.parameter_name}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span className="rounded-lg bg-slate-100 px-3 py-1 font-mono text-[11px] font-bold text-slate-700">
+                          {item.parameter_key}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-bold capitalize ${getInputTypeBadge(
+                            item.input_type
+                          )}`}
+                        >
+                          {item.input_type}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-bold ${
+                            item.is_required
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-orange-100 text-orange-700"
+                          }`}
+                        >
+                          {item.is_required ? "Wajib" : "Opsional"}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3 text-slate-500">
+                        {item.created_at}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(item)}
+                            className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 hover:shadow-sm"
+                            title="Edit"
+                          >
+                            <Edit size={15} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(item.id)}
+                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:shadow-sm"
+                            title="Hapus"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="7"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Data parameter surat tidak ditemukan.
@@ -336,33 +437,148 @@ function ParameterSurat() {
             </table>
           </div>
 
-          <div className="mt-4 flex flex-col justify-between gap-3 text-xs text-slate-500 sm:flex-row sm:items-center">
-            <p>
-              Menampilkan{" "}
-              <span className="font-bold text-slate-700">
-                {filteredData.length}
-              </span>{" "}
-              dari{" "}
-              <span className="font-bold text-slate-700">
-                {parameterData.length}
-              </span>{" "}
-              data parameter.
-            </p>
-
-            <div className="flex items-center gap-2">
-              <button className="rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600">
-                Previous
-              </button>
-              <button className="rounded-lg bg-[#2680BE] px-3 py-2 font-bold text-white shadow-sm transition hover:bg-[#1f6fa7]">
-                1
-              </button>
-              <button className="rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600">
-                Next
-              </button>
-            </div>
+          <div className="mt-4 text-xs text-slate-500">
+            Menampilkan{" "}
+            <span className="font-bold text-slate-700">
+              {filteredData.length}
+            </span>{" "}
+            dari{" "}
+            <span className="font-bold text-slate-700">
+              {parameters.length}
+            </span>{" "}
+            data parameter.
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between bg-gradient-to-r from-[#002248] to-[#2680BE] px-5 py-4 text-white">
+              <div>
+                <h2 className="text-base font-extrabold">
+                  {editId ? "Edit Parameter Surat" : "Tambah Parameter Surat"}
+                </h2>
+                <p className="mt-1 text-xs text-white/70">
+                  Lengkapi data parameter untuk template surat.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-full p-2 transition hover:bg-white/10"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 p-5">
+              <div>
+                <label className="mb-2 block text-xs font-bold text-slate-700">
+                  Template Surat
+                </label>
+                <select
+                  name="template_id"
+                  value={form.template_id}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400"
+                >
+                  <option value="">Pilih template surat</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.takah_code} - {template.template_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold text-slate-700">
+                  Nama Parameter
+                </label>
+                <input
+                  type="text"
+                  name="parameter_name"
+                  value={form.parameter_name}
+                  onChange={handleChange}
+                  placeholder="Contoh: Nama Tujuan"
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold text-slate-700">
+                  Key Parameter
+                </label>
+                <input
+                  type="text"
+                  name="parameter_key"
+                  value={form.parameter_key}
+                  onChange={handleChange}
+                  placeholder="Contoh: nama_tujuan"
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-mono outline-none transition hover:border-blue-300 focus:border-blue-400"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold text-slate-700">
+                  Tipe Input
+                </label>
+                <select
+                  name="input_type"
+                  value={form.input_type}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400"
+                >
+                  <option value="text">Text</option>
+                  <option value="textarea">Textarea</option>
+                  <option value="number">Number</option>
+                  <option value="date">Date</option>
+                  <option value="time">Time</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-bold text-slate-700">
+                  Status Isian
+                </label>
+                <select
+                  name="is_required"
+                  value={String(form.is_required)}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400"
+                >
+                  <option value="true">Wajib Diisi</option>
+                  <option value="false">Opsional</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="submit"
+                  className="rounded-xl bg-[#2680BE] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#1f6fa7] hover:shadow-md"
+                >
+                  {editId ? "Simpan Perubahan" : "Simpan Parameter"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

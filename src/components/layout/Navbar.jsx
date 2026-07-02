@@ -1,13 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Clock,
-  LogOut,
-  ShieldCheck,
-  UserCircle,
-  X,
-} from "lucide-react";
+import { Clock, LogOut, ShieldCheck, UserCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+
+const API_URL = "http://localhost:8080";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -33,6 +29,12 @@ function Navbar() {
       .toUpperCase();
   };
 
+  const getPhotoUrl = (photoUrl) => {
+    if (!photoUrl) return "";
+    if (photoUrl.startsWith("http")) return photoUrl;
+    return `${API_URL}${photoUrl}`;
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
@@ -41,6 +43,8 @@ function Navbar() {
   const toggleProfilePopup = () => {
     setIsProfileOpen((prevState) => !prevState);
   };
+
+  const photoUrl = getPhotoUrl(user?.photo_url);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,10 +89,20 @@ function Navbar() {
           <button
             type="button"
             onClick={toggleProfilePopup}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-[#002248] text-sm font-bold text-white ring-2 ring-transparent transition hover:scale-105 hover:ring-[#2680BE]/30"
+            className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#002248] text-sm font-bold text-white ring-2 ring-transparent transition hover:scale-105 hover:ring-[#2680BE]/30"
             title="Profile"
           >
-            {user?.name ? getInitial(user.name) : <UserCircle size={24} />}
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt="Foto Profile"
+                className="h-full w-full object-cover"
+              />
+            ) : user?.name ? (
+              getInitial(user.name)
+            ) : (
+              <UserCircle size={24} />
+            )}
           </button>
 
           {isProfileOpen && (
@@ -96,8 +110,16 @@ function Navbar() {
               <div className="bg-gradient-to-r from-[#002248] to-[#2680BE] px-5 py-5 text-white">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/40 bg-white/10 text-sm font-bold">
-                      {getInitial(user?.name)}
+                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-white/40 bg-white/10 text-sm font-bold">
+                      {photoUrl ? (
+                        <img
+                          src={photoUrl}
+                          alt="Foto Profile"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        getInitial(user?.name)
+                      )}
                     </div>
 
                     <div>
