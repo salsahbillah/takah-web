@@ -34,7 +34,6 @@ function Sidebar() {
   const userMenus = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "Buat Surat", path: "/surat-keluar", icon: FileCheck },
-    { name: "Surat Masuk", path: "/surat-masuk", icon: FileInput },
     { name: "Monitoring", path: "/monitoring", icon: MonitorCheck },
     { name: "Profile", path: "/profile", icon: User },
   ];
@@ -43,9 +42,9 @@ function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-72 overflow-hidden bg-[#071f46] text-white shadow-2xl">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(38,128,190,0.55),_transparent_35%),linear-gradient(180deg,_rgba(0,34,72,0.94),_rgba(0,34,72,0.84))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(38,128,190,0.55),transparent_35%),linear-gradient(180deg,rgba(0,34,72,0.94),rgba(0,34,72,0.84))]" />
 
-      <div className="absolute inset-0 bg-[url('/src/assets/logo/logo-takah-icon.png')] bg-[length:420px] bg-center bg-no-repeat opacity-[0.04]" />
+      <div className="absolute inset-0 bg-[url('/src/assets/logo/logo-takah-icon.png')] bg-size-[420px] bg-center bg-no-repeat opacity-[0.04]" />
 
       <div className="relative flex h-full flex-col backdrop-blur-sm">
         <div className="flex h-24 items-center gap-3 border-b border-white/10 px-6">
