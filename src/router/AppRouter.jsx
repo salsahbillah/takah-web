@@ -14,6 +14,7 @@ import TemplateSurat from "../pages/template/TemplateSurat";
 
 import MainLayout from "../layouts/MainLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import BuatSurat from "../pages/buat-surat/BuatSurat";
 
 function AppRouter() {
   return (
@@ -34,6 +35,7 @@ function AppRouter() {
             <Route path="/approval" element={<Approval />} />
             <Route path="/monitoring" element={<Monitoring />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/buat-surat" element={<BuatSurat />} />
           </Route>
         </Route>
       </Routes>

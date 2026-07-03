@@ -5,7 +5,6 @@ import {
   Eye,
   FileText,
   Search,
-  Send,
   X,
   XCircle,
 } from "lucide-react";
@@ -47,7 +46,8 @@ function Approval() {
       const matchSearch =
         item.nomor_surat?.toLowerCase().includes(keyword) ||
         item.approver_name?.toLowerCase().includes(keyword) ||
-        item.approval_status?.toLowerCase().includes(keyword);
+        item.approval_status?.toLowerCase().includes(keyword) ||
+        item.notes?.toLowerCase().includes(keyword);
 
       const matchStatus =
         statusFilter === "semua" || item.approval_status === statusFilter;
@@ -58,12 +58,9 @@ function Approval() {
 
   const summary = {
     total: approvals.length,
-    pending: approvals.filter((item) => item.approval_status === "pending")
-      .length,
-    approved: approvals.filter((item) => item.approval_status === "approved")
-      .length,
-    rejected: approvals.filter((item) => item.approval_status === "rejected")
-      .length,
+    pending: approvals.filter((item) => item.approval_status === "pending").length,
+    approved: approvals.filter((item) => item.approval_status === "approved").length,
+    rejected: approvals.filter((item) => item.approval_status === "rejected").length,
   };
 
   const getStatusClass = (status) => {
@@ -119,11 +116,7 @@ function Approval() {
         notes,
       });
 
-      alert(
-        status === "approved"
-          ? "Surat berhasil diapprove"
-          : "Surat berhasil direject"
-      );
+      alert(status === "approved" ? "Surat berhasil diapprove" : "Surat berhasil direject");
 
       closeDetail();
       fetchApprovals();
@@ -134,219 +127,186 @@ function Approval() {
   };
 
   const summaryCards = [
-    {
-      title: "Total Approval",
-      value: summary.total,
-      icon: FileText,
-      bgIcon: "bg-blue-100",
-      textIcon: "text-blue-600",
-    },
-    {
-      title: "Pending",
-      value: summary.pending,
-      icon: Clock3,
-      bgIcon: "bg-orange-100",
-      textIcon: "text-orange-600",
-    },
-    {
-      title: "Approved",
-      value: summary.approved,
-      icon: CheckCircle2,
-      bgIcon: "bg-emerald-100",
-      textIcon: "text-emerald-600",
-    },
-    {
-      title: "Rejected",
-      value: summary.rejected,
-      icon: XCircle,
-      bgIcon: "bg-red-100",
-      textIcon: "text-red-600",
-    },
+    { title: "Total Approval", value: summary.total, icon: FileText, bgIcon: "bg-blue-100", textIcon: "text-blue-600" },
+    { title: "Pending", value: summary.pending, icon: Clock3, bgIcon: "bg-orange-100", textIcon: "text-orange-600" },
+    { title: "Approved", value: summary.approved, icon: CheckCircle2, bgIcon: "bg-emerald-100", textIcon: "text-emerald-600" },
+    { title: "Rejected", value: summary.rejected, icon: XCircle, bgIcon: "bg-red-100", textIcon: "text-red-600" },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl bg-linear-to-r from-[#082f5f] via-[#0f5f99] to-[#2b8fd3] p-8 shadow-lg">
-        <p className="text-sm font-medium text-blue-100">Review Surat</p>
-        <h1 className="mt-1 text-4xl font-bold text-white">Approval Surat</h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-blue-100">
-          Kelola surat keluar yang diajukan untuk direview, disetujui, atau
-          ditolak.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {summaryCards.map((card) => {
-          const Icon = card.icon;
-
-          return (
-            <div
-              key={card.title}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div
-                className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl ${card.bgIcon}`}
-              >
-                <Icon className={card.textIcon} size={23} />
-              </div>
-
-              <p className="text-sm font-semibold text-slate-600">
-                {card.title}
-              </p>
-              <h2 className="mt-2 text-3xl font-extrabold text-slate-900">
-                {card.value}
-              </h2>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">
-              Daftar Approval Surat
-            </h2>
-            <p className="text-sm text-slate-500">
-              Surat yang sudah diajukan dari modul Surat Keluar akan tampil di
-              sini.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 lg:flex-row">
-            <div className="relative w-full lg:w-80">
-              <Search
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari nomor surat..."
-                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="semua">Semua Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
+    <div className="min-h-screen bg-slate-50 px-3 py-4 text-[13px] sm:px-4 lg:px-5">
+      <div className="mx-auto w-full max-w-[1180px] space-y-4">
+        <div className="rounded-2xl bg-gradient-to-r from-[#082f5f] via-[#0f5f99] to-[#2b8fd3] p-5 text-white shadow-md sm:p-6">
+          <p className="text-xs font-semibold text-blue-100">Review Surat</p>
+          <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">
+            Approval Surat
+          </h1>
+          <p className="mt-2 max-w-3xl text-xs leading-6 text-blue-100 sm:text-sm">
+            Kelola surat keluar yang diajukan untuk direview, disetujui, atau ditolak.
+          </p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-100">
-          <table className="w-full min-w-230 border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-left text-sm text-slate-600">
-                <th className="px-4 py-4 font-semibold">No</th>
-                <th className="px-4 py-4 font-semibold">Nomor Surat</th>
-                <th className="px-4 py-4 font-semibold">Approver</th>
-                <th className="px-4 py-4 font-semibold">Status</th>
-                <th className="px-4 py-4 font-semibold">Catatan</th>
-                <th className="px-4 py-4 font-semibold">Tanggal</th>
-                <th className="px-4 py-4 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.title}
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.bgIcon}`}>
+                  <Icon className={card.textIcon} size={20} />
+                </div>
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan="7"
-                    className="px-4 py-10 text-center text-sm text-slate-500"
-                  >
-                    Memuat data approval...
-                  </td>
+                <p className="text-xs font-semibold text-slate-600">{card.title}</p>
+                <h2 className="mt-1 text-2xl font-extrabold text-slate-900">
+                  {card.value}
+                </h2>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">
+                Daftar Approval Surat
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
+                Surat yang sudah diajukan dari modul Surat Keluar akan tampil di sini.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <div className="relative w-full sm:w-72">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari nomor surat..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="semua">Semua Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full min-w-[850px] border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-600">
+                  <th className="w-12 px-4 py-3 font-bold">No</th>
+                  <th className="px-4 py-3 font-bold">Nomor Surat</th>
+                  <th className="px-4 py-3 font-bold">Approver</th>
+                  <th className="px-4 py-3 font-bold">Status</th>
+                  <th className="px-4 py-3 font-bold">Catatan</th>
+                  <th className="px-4 py-3 font-bold">Tanggal</th>
+                  <th className="px-4 py-3 text-center font-bold">Aksi</th>
                 </tr>
-              ) : filteredApprovals.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="7"
-                    className="px-4 py-10 text-center text-sm text-slate-500"
-                  >
-                    Belum ada data approval.
-                  </td>
-                </tr>
-              ) : (
-                filteredApprovals.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-slate-100 text-sm text-slate-700 transition hover:bg-slate-50"
-                  >
-                    <td className="px-4 py-4">{index + 1}</td>
-                    <td className="px-4 py-4 font-bold text-slate-900">
-                      {item.nomor_surat}
-                    </td>
-                    <td className="px-4 py-4">{item.approver_name || "-"}</td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusClass(
-                          item.approval_status
-                        )}`}
-                      >
-                        {getStatusLabel(item.approval_status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">{item.notes || "-"}</td>
-                    <td className="px-4 py-4">{item.created_at || "-"}</td>
-                    <td className="px-4 py-4">
-                      <div className="flex justify-center">
-                        <button
-                          onClick={() => openDetail(item)}
-                          className="rounded-lg bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
-                          title="Review"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      </div>
+              </thead>
+
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-4 py-8 text-center text-xs text-slate-500">
+                      Memuat data approval...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filteredApprovals.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-4 py-8 text-center text-xs text-slate-500">
+                      Belum ada data approval.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredApprovals.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className="border-b border-slate-100 text-xs text-slate-700 transition hover:bg-blue-50/40"
+                    >
+                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-3 font-extrabold text-slate-900">
+                        {item.nomor_surat}
+                      </td>
+                      <td className="px-4 py-3 font-medium">
+                        {item.approver_name || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(item.approval_status)}`}>
+                          {getStatusLabel(item.approval_status)}
+                        </span>
+                      </td>
+                      <td className="max-w-[220px] px-4 py-3">
+                        <p className="line-clamp-2">{item.notes || "-"}</p>
+                      </td>
+                      <td className="px-4 py-3">{item.created_at || "-"}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => openDetail(item)}
+                            className="rounded-lg bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
+                            title="Review"
+                          >
+                            <Eye size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {showDetail && detailData && selectedApproval && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between bg-linear-to-r from-[#082f5f] to-[#2b8fd3] px-7 py-5 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-[#082f5f] to-[#2b8fd3] px-5 py-4 text-white">
               <div>
-                <h2 className="text-xl font-bold">Review Approval Surat</h2>
-                <p className="mt-1 text-sm text-blue-100">
+                <h2 className="text-base font-extrabold">Review Approval Surat</h2>
+                <p className="mt-1 text-xs text-blue-100">
                   Periksa isi surat sebelum memberikan keputusan.
                 </p>
               </div>
 
               <button
                 onClick={closeDetail}
-                className="rounded-xl p-2 transition hover:bg-white/10"
+                className="rounded-lg p-2 transition hover:bg-white/10"
               >
-                <X size={22} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="grid gap-5 p-7 lg:grid-cols-[300px_minmax(0,1fr)]">
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="grid gap-4 p-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                     Nomor Surat
                   </p>
-                  <p className="mt-2 text-lg font-extrabold text-slate-900">
+                  <p className="mt-2 text-base font-extrabold text-slate-900">
                     {detailData.nomor_surat || "-"}
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="space-y-4 text-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="space-y-3 text-xs">
                     <div>
                       <p className="text-slate-500">Jenis Surat</p>
                       <p className="mt-1 font-bold text-slate-900">
@@ -377,51 +337,46 @@ function Approval() {
 
                     <div>
                       <p className="text-slate-500">Status Approval</p>
-                      <span
-                        className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${getStatusClass(
-                          selectedApproval.approval_status
-                        )}`}
-                      >
+                      <span className={`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(selectedApproval.approval_status)}`}>
                         {getStatusLabel(selectedApproval.approval_status)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <label className="mb-2 block text-sm font-bold text-slate-700">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <label className="mb-2 block text-xs font-bold text-slate-700">
                     Catatan Approval
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    rows="5"
+                    rows="4"
                     placeholder="Tulis catatan approval atau alasan reject..."
-                    className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="mb-3 text-lg font-bold text-slate-900">
+                <h3 className="mb-2 text-sm font-extrabold text-slate-900">
                   Preview Surat
                 </h3>
 
-                <div className="max-h-[620px] overflow-auto rounded-2xl border border-slate-200 bg-slate-100 p-5">
-                  <div className="mx-auto max-w-3xl rounded-xl bg-white px-12 py-10 shadow-sm">
-                    <div className="whitespace-pre-wrap font-serif text-[15px] leading-8 text-slate-950">
-                      {detailData.generated_content ||
-                        "Isi surat belum tersedia."}
+                <div className="max-h-[500px] overflow-auto rounded-2xl border border-slate-200 bg-slate-100 p-4">
+                  <div className="mx-auto max-w-2xl rounded-xl bg-white px-8 py-7 shadow-sm">
+                    <div className="whitespace-pre-wrap font-serif text-[13px] leading-7 text-slate-950">
+                      {detailData.generated_content || "Isi surat belum tersedia."}
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-7 py-5">
+            <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4">
               <button
                 onClick={closeDetail}
-                className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
               >
                 Batal
               </button>
@@ -430,17 +385,17 @@ function Approval() {
                 <>
                   <button
                     onClick={() => handleDecision("rejected")}
-                    className="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700"
+                    className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
                   >
-                    <XCircle size={18} />
+                    <XCircle size={16} />
                     Reject
                   </button>
 
                   <button
                     onClick={() => handleDecision("approved")}
-                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
                   >
-                    <CheckCircle2 size={18} />
+                    <CheckCircle2 size={16} />
                     Approve
                   </button>
                 </>

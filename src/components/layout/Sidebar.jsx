@@ -33,7 +33,7 @@ function Sidebar() {
 
   const userMenus = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { name: "Buat Surat", path: "/surat-keluar", icon: FileCheck },
+    { name: "Buat Surat", path: "/buat-surat", icon: FileCheck },
     { name: "Monitoring", path: "/monitoring", icon: MonitorCheck },
     { name: "Profile", path: "/profile", icon: User },
   ];

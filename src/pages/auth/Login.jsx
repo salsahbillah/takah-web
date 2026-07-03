@@ -14,21 +14,11 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState("admin@takah.com");
-  const [password, setPassword] = useState("Admin1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const handleQuickLogin = (type) => {
-    if (type === "admin") {
-      setEmail("admin@takah.com");
-      setPassword("Admin1234");
-    } else {
-      setEmail("user@takah.com");
-      setPassword("password123");
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,23 +72,6 @@ function Login() {
               Digitalisasi pengelolaan surat untuk proses administrasi yang
               lebih cepat, rapi, dan efisien.
             </p>
-
-            {/* Tombol role diturunkan */}
-            <div className="mt-28 flex items-center gap-6">
-              <Button
-                onClick={() => handleQuickLogin("user")}
-                className="h-10 min-w-[130px] px-6 text-[13px]"
-              >
-                Login User
-              </Button>
-
-              <Button
-                onClick={() => handleQuickLogin("admin")}
-                className="ml-6 h-10 min-w-[170px] px-6 text-[13px]"
-              >
-                Login Admin/Staff
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -109,32 +82,36 @@ function Login() {
               Login
             </h2>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} autoComplete="off">
               <Input
-                label="Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Masukkan email"
-              />
+                  label="Email"
+                  type="email"
+                  name="login_email_takah"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Masukkan email"
+                  autoComplete="off"
+                />
 
               <Input
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukkan password"
-                className="mt-5"
-                rightIcon={
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan password"
+                  autoComplete="new-password"
+                  className="mt-5"
+                  rightIcon={
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="flex items-center"
+                    className="flex items-center text-white/90 transition hover:text-white"
+                    title={showPassword ? "Sembunyikan password" : "Lihat password"}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
-                }
-              />
+                  }
+                />
 
               {error && (
                 <p className="mt-4 text-center text-xs font-semibold text-red-200">

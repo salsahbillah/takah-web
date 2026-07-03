@@ -1,31 +1,22 @@
-function Input({
-    label,
-    type = "text",
-    value,
-    onChange,
-    placeholder,
-    rightIcon,
-    className = "",
-  }) {
-    return (
-      <div className={className}>
-        <label className="mb-2 block text-[10px] font-bold uppercase tracking-wide text-white">
+function Input({ label, rightIcon, className = "", ...props }) {
+  return (
+    <div className={className}>
+      {label && (
+        <label className="mb-2 block text-xs font-bold uppercase text-white">
           {label}
         </label>
-  
-        <div className="flex h-9 items-center rounded-full bg-white/30 px-4">
-          <input
-            type={type}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            className="w-full bg-transparent text-[11px] font-medium text-white placeholder:text-white/80 outline-none"
-          />
-  
-          {rightIcon && <div className="ml-2 flex text-white">{rightIcon}</div>}
-        </div>
+      )}
+
+      <div className="flex items-center rounded-full bg-white/35 px-4">
+        <input
+          {...props}
+          className="w-full bg-transparent py-3 text-sm font-semibold text-white placeholder:text-white/70 outline-none"
+        />
+
+        {rightIcon}
       </div>
-    );
-  }
-  
-  export default Input;
+    </div>
+  );
+}
+
+export default Input;

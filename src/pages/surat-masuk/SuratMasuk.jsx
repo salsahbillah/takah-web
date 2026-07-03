@@ -95,16 +95,23 @@ function SuratMasuk() {
     });
   }, [suratMasuk, searchQuery, statusFilter]);
 
+  const today = new Date();
+  const todayString = today.toISOString().split("T")[0];
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
   const totalSurat = suratMasuk.length;
-  const totalReceived = suratMasuk.filter(
-    (item) => item.status === "received"
+  const totalToday = suratMasuk.filter(
+    (item) => item.tanggal_surat === todayString
   ).length;
-  const totalProcessed = suratMasuk.filter(
-    (item) => item.status === "processed"
-  ).length;
-  const totalArchived = suratMasuk.filter(
-    (item) => item.status === "archived"
-  ).length;
+
+  const totalThisMonth = suratMasuk.filter((item) => {
+    const date = new Date(item.tanggal_surat);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  }).length;
+
+  const totalPengirim = new Set(
+    suratMasuk.map((item) => item.pengirim?.toLowerCase().trim())
+  ).size;
 
   const summaryCards = [
     {
@@ -115,22 +122,22 @@ function SuratMasuk() {
       textIcon: "text-blue-600",
     },
     {
-      title: "Diterima",
-      value: totalReceived,
+      title: "Hari Ini",
+      value: totalToday,
       icon: Mail,
       bgIcon: "bg-emerald-100",
       textIcon: "text-emerald-600",
     },
     {
-      title: "Diproses",
-      value: totalProcessed,
+      title: "Bulan Ini",
+      value: totalThisMonth,
       icon: FileText,
       bgIcon: "bg-orange-100",
       textIcon: "text-orange-600",
     },
     {
-      title: "Diarsipkan",
-      value: totalArchived,
+      title: "Instansi Pengirim",
+      value: totalPengirim,
       icon: Archive,
       bgIcon: "bg-purple-100",
       textIcon: "text-purple-600",
