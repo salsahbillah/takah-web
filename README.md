@@ -1,12 +1,12 @@
 # TAKAH
 
-Frontend **Takah (Smart Letter Management System)** merupakan aplikasi pengelolaan surat digital yang dibangun menggunakan **React, Vite, Tailwind CSS**, dan terintegrasi dengan **REST API Golang Gin**.
+**Takah (Smart Letter Management System)** is a web-based digital correspondence management application built with **React**, **Vite**, and **Tailwind CSS**, integrated with a **Golang Gin REST API** backend.
 
-Aplikasi ini dikembangkan sebagai bagian dari Program Magang Industri di **PT Cyberss Blitz Nusantara** untuk membantu proses administrasi surat secara digital mulai dari pembuatan surat, approval, monitoring, hingga pengelolaan data master.
+The application was developed as part of the Industrial Internship Program at **PT Cyber Blitz Nusantara** to streamline digital correspondence processes, including letter creation, approval workflows, monitoring, and master data management.
 
 ---
 
-# Tech Stack
+# Technology Stack
 
 - React 19
 - Vite
@@ -43,13 +43,13 @@ src
 
 ---
 
-# Fitur Aplikasi
+# Application Features
 
 ## Authentication
 
-- Login
+- User Login
 - JWT Authentication
-- Protected Route
+- Protected Routes
 - Logout
 - Session Management
 
@@ -57,27 +57,27 @@ src
 
 ## Dashboard
 
-- Dashboard Admin
-- Ringkasan Statistik Surat
-- Informasi Profil User
-- Navigasi Cepat
+- Admin Dashboard
+- Letter Statistics Summary
+- User Profile Overview
+- Quick Navigation
 
 ---
 
 ## Master Takah
 
-- Tambah Master
-- Edit Master
-- Hapus Master
-- Pencarian Data
+- Create Master Data
+- Update Master Data
+- Delete Master Data
+- Search Functionality
 
 ---
 
 ## Parameter Surat
 
-- CRUD Parameter
-- Template Relation
-- Dynamic Input
+- CRUD Operations
+- Template Relationships
+- Dynamic Input Fields
 - Search & Filter
 - Pagination
 
@@ -85,9 +85,9 @@ src
 
 ## Template Surat
 
-- CRUD Template
-- Placeholder Surat
-- Preview Template
+- CRUD Operations
+- Dynamic Letter Placeholders
+- Template Preview
 - Search
 - Pagination
 
@@ -95,22 +95,22 @@ src
 
 ## Config Nomor Surat
 
-- CRUD Config
-- Generate Format Nomor
-- Reset Bulanan
-- Reset Tahunan
-- Preview Nomor Surat
+- CRUD Operations
+- Automatic Letter Number Configuration
+- Monthly Reset
+- Yearly Reset
+- Number Format Preview
 
 ---
 
 ## Surat Keluar
 
-- CRUD Surat Keluar
-- Generate Nomor Surat
-- Dynamic Parameter
-- Draft
-- Submit Approval
-- Download PDF
+- CRUD Operations
+- Automatic Letter Number Generation
+- Dynamic Parameters
+- Draft Management
+- Submit for Approval
+- PDF Download
 - Search
 - Filter
 - Pagination
@@ -119,9 +119,9 @@ src
 
 ## Surat Masuk
 
-- CRUD Surat Masuk
-- Upload Dokumen
-- Download Lampiran
+- CRUD Operations
+- Document Upload
+- Attachment Download
 - Search
 - Filter
 - Pagination
@@ -130,11 +130,11 @@ src
 
 ## Approval
 
-- Detail Surat
-- Approve Surat
-- Reject Surat
-- Catatan Approval
-- Download Surat
+- Letter Details
+- Approve Letter
+- Reject Letter
+- Approval Notes
+- PDF Download
 - Search
 - Filter
 - Pagination
@@ -143,9 +143,9 @@ src
 
 ## Monitoring
 
-- Monitoring Status Surat
-- Riwayat Approval
-- Detail Surat
+- Letter Status Monitoring
+- Approval History
+- Letter Details
 - Search
 - Filter
 - Pagination
@@ -154,8 +154,8 @@ src
 
 ## Profile
 
-- Informasi User
-- Role User
+- User Information
+- User Role
 - Logout
 
 ---
@@ -166,10 +166,10 @@ src
 User
  │
  ▼
-Login
+Login Page
  │
  ▼
-Input Email & Password
+Enter Email & Password
  │
  ▼
 POST /api/v1/auth/login
@@ -187,7 +187,7 @@ Local Storage
 Auth Context
  │
  ▼
-Protected Route
+Protected Routes
  │
  ▼
 Dashboard
@@ -195,7 +195,7 @@ Dashboard
 
 ---
 
-# Flow Aplikasi
+# Application Flow
 
 ```text
 Login
@@ -216,10 +216,10 @@ Dashboard
 
 ---
 
-# Status Pengembangan
+# Development Status
 
-| Modul | Status |
-|--------|:------:|
+| Module | Status |
+|----------|:------:|
 | Authentication | ✅ |
 | Dashboard | ✅ |
 | Master Takah | ✅ |
@@ -232,25 +232,25 @@ Dashboard
 | Monitoring | ✅ |
 | Profile | ✅ |
 | Responsive UI | ✅ |
-| Integrasi REST API | ✅ |
+| REST API Integration | ✅ |
 
 ---
 
-# Cara Menjalankan Project
+# Running the Project
 
-Install dependency
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Menjalankan project
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Build production
+Build for production:
 
 ```bash
 npm run build
@@ -260,12 +260,12 @@ npm run build
 
 # Backend
 
-Repository backend menggunakan **Golang Gin** dan terintegrasi dengan MySQL melalui REST API.
+The backend service is developed using **Golang**, **Gin Framework**, and **MySQL**, and communicates with the frontend through RESTful APIs.
 
 ---
 
-# Catatan
+# Notes
 
-Project ini merupakan hasil implementasi selama Program Magang Industri di **PT Cybers Blitz Nusantara**.
+This project was completed as part of the Industrial Internship Program at **PT Cyber Blitz Nusantara**.
 
-Seluruh fitur utama yang menjadi ruang lingkup pengembangan telah diselesaikan. Apabila di kemudian hari terdapat perubahan kebutuhan atau penyesuaian fitur, perubahan tersebut menjadi catatan untuk pengembangan lanjutan di luar periode pelaksanaan magang.
+All core features defined within the project scope have been successfully implemented and integrated with the backend system. Any future enhancements, feature requests, or requirement changes beyond the internship period are considered future development and are documented as implementation notes.
