@@ -19,6 +19,7 @@ import {
   getAllParameterSurat,
   updateParameterSurat,
 } from "../../services/parameterSuratService";
+import Pagination from "../../components/common/Pagination";
 
 const initialForm = {
   template_id: "",
@@ -40,6 +41,9 @@ function ParameterSurat() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const fetchParameters = async () => {
     try {
@@ -69,6 +73,10 @@ function ParameterSurat() {
     fetchTemplates();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, templateFilter, requiredFilter]);
+
   const filteredData = useMemo(() => {
     return parameters.filter((item) => {
       const search = searchQuery.toLowerCase();
@@ -91,6 +99,11 @@ function ParameterSurat() {
       return matchSearch && matchTemplate && matchRequired;
     });
   }, [parameters, searchQuery, templateFilter, requiredFilter]);
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(start, start + itemsPerPage);
+  }, [filteredData, currentPage]);
 
   const totalParameter = parameters.length;
   const totalRequired = parameters.filter((item) => item.is_required).length;
@@ -206,9 +219,7 @@ function ParameterSurat() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = confirm(
-      "Yakin ingin menghapus parameter surat ini?"
-    );
+    const confirmDelete = confirm("Yakin ingin menghapus parameter surat ini?");
 
     if (!confirmDelete) return;
 
@@ -238,7 +249,7 @@ function ParameterSurat() {
           <button
             type="button"
             onClick={openAddModal}
-            className="flex w-fit items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
+            className="flex w-fit items-center gap-1 rounded-xl bg-white px-3 py-2 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
           >
             <Plus size={16} />
             Tambah Parameter
@@ -324,9 +335,10 @@ function ParameterSurat() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full min-w-[950px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[980px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
+                  <th className="px-4 py-3 font-bold">No</th>
                   <th className="px-4 py-3 font-bold">Template</th>
                   <th className="px-4 py-3 font-bold">Nama Parameter</th>
                   <th className="px-4 py-3 font-bold">Key Parameter</th>
@@ -341,18 +353,22 @@ function ParameterSurat() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Memuat data parameter surat...
                     </td>
                   </tr>
                 ) : filteredData.length > 0 ? (
-                  filteredData.map((item) => (
+                  paginatedData.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -426,7 +442,7 @@ function ParameterSurat() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Data parameter surat tidak ditemukan.
@@ -437,17 +453,12 @@ function ParameterSurat() {
             </table>
           </div>
 
-          <div className="mt-4 text-xs text-slate-500">
-            Menampilkan{" "}
-            <span className="font-bold text-slate-700">
-              {filteredData.length}
-            </span>{" "}
-            dari{" "}
-            <span className="font-bold text-slate-700">
-              {parameters.length}
-            </span>{" "}
-            data parameter.
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 

@@ -297,7 +297,7 @@ function Dashboard() {
         <div className="mb-4 rounded-2xl bg-linear-to-r from-[#002248] to-[#2680BE] p-5 text-white shadow-md transition hover:shadow-lg">
           <p className="text-xs text-white/75">Selamat datang kembali</p>
           <h2 className="mt-1 text-xl font-extrabold">
-            {user?.name || "Admin Takah"} 👋
+            {user?.name || "Admin Takah"}
           </h2>
           <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/75">
             Anda login sebagai {getRoleLabel(role)}.{" "}

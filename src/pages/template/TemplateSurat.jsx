@@ -17,6 +17,7 @@ import {
   getAllTemplateSurat,
   updateTemplateSurat,
 } from "../../services/templateSuratService";
+import Pagination from "../../components/common/Pagination";
 
 const initialForm = {
   takah_id: "",
@@ -35,6 +36,9 @@ function TemplateSurat() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchTemplates = async () => {
     try {
@@ -64,6 +68,10 @@ function TemplateSurat() {
     fetchTakah();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, takahFilter]);
+
   const filteredTemplates = useMemo(() => {
     return templates.filter((item) => {
       const search = searchQuery.toLowerCase();
@@ -79,6 +87,11 @@ function TemplateSurat() {
       return matchSearch && matchTakah;
     });
   }, [templates, searchQuery, takahFilter]);
+
+  const paginatedTemplates = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredTemplates.slice(start, start + itemsPerPage);
+  }, [filteredTemplates, currentPage]);
 
   const totalTemplate = templates.length;
   const totalJenisSurat = new Set(templates.map((item) => item.takah_code)).size;
@@ -304,9 +317,10 @@ function TemplateSurat() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full min-w-[980px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[1020px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
+                  <th className="px-4 py-3 font-bold">No</th>
                   <th className="px-4 py-3 font-bold">Jenis Surat</th>
                   <th className="px-4 py-3 font-bold">Nama Template</th>
                   <th className="px-4 py-3 font-bold">Preview Isi</th>
@@ -319,18 +333,22 @@ function TemplateSurat() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Memuat data template surat...
                     </td>
                   </tr>
                 ) : filteredTemplates.length > 0 ? (
-                  filteredTemplates.map((item) => (
+                  paginatedTemplates.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -347,8 +365,10 @@ function TemplateSurat() {
                         {item.template_name}
                       </td>
 
-                      <td className="px-4 py-3 text-slate-500">
-                        {getContentPreview(item.content)}
+                      <td className="max-w-[350px] px-4 py-3 text-slate-500">
+                        <p className="line-clamp-2">
+                          {getContentPreview(item.content)}
+                        </p>
                       </td>
 
                       <td className="px-4 py-3 text-slate-500">
@@ -390,7 +410,7 @@ function TemplateSurat() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Data template surat tidak ditemukan.
@@ -401,21 +421,15 @@ function TemplateSurat() {
             </table>
           </div>
 
-          <div className="mt-4 text-xs text-slate-500">
-            Menampilkan{" "}
-            <span className="font-bold text-slate-700">
-              {filteredTemplates.length}
-            </span>{" "}
-            dari{" "}
-            <span className="font-bold text-slate-700">
-              {templates.length}
-            </span>{" "}
-            data template.
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredTemplates.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
-
-      {showModal && (
+            {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4 backdrop-blur-sm">
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex items-center justify-between bg-gradient-to-r from-[#002248] to-[#2680BE] px-5 py-4 text-white">
@@ -442,6 +456,7 @@ function TemplateSurat() {
                 <label className="mb-2 block text-xs font-bold text-slate-700">
                   Jenis Surat
                 </label>
+
                 <select
                   name="takah_id"
                   value={form.takah_id}
@@ -450,6 +465,7 @@ function TemplateSurat() {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400"
                 >
                   <option value="">Pilih jenis surat</option>
+
                   {takahList.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.code || item.kode_takah} -{" "}
@@ -463,6 +479,7 @@ function TemplateSurat() {
                 <label className="mb-2 block text-xs font-bold text-slate-700">
                   Nama Template
                 </label>
+
                 <input
                   type="text"
                   name="template_name"
@@ -478,6 +495,7 @@ function TemplateSurat() {
                 <label className="mb-2 block text-xs font-bold text-slate-700">
                   Isi Template
                 </label>
+
                 <textarea
                   name="content"
                   value={form.content}
@@ -487,6 +505,7 @@ function TemplateSurat() {
                   rows="9"
                   className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-xs leading-relaxed outline-none transition hover:border-blue-300 focus:border-blue-400"
                 />
+
                 <p className="mt-2 text-[11px] text-slate-500">
                   Gunakan format placeholder seperti {"{{nama_tujuan}}"},{" "}
                   {"{{tanggal}}"}, atau {"{{tempat}}"}.
@@ -522,6 +541,7 @@ function TemplateSurat() {
                 <h2 className="text-base font-extrabold">
                   Preview Template Surat
                 </h2>
+
                 <p className="mt-1 text-xs text-white/70">
                   {selectedTemplate.template_name}
                 </p>
@@ -541,12 +561,13 @@ function TemplateSurat() {
                 <span className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                   {selectedTemplate.takah_code}
                 </span>
+
                 <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
                   {selectedTemplate.created_at}
                 </span>
               </div>
 
-              <div className="max-h-[420px] overflow-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700 whitespace-pre-wrap">
+              <div className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-700">
                 {highlightPlaceholder(selectedTemplate.content)}
               </div>
             </div>

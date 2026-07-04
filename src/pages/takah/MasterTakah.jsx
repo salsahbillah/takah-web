@@ -7,6 +7,7 @@ import {
   updateTakah,
   deleteTakah,
 } from "../../services/takahService";
+import Pagination from "../../components/common/Pagination";
 
 const initialForm = {
   code: "",
@@ -23,6 +24,9 @@ function MasterTakah() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
 
   const fetchTakah = async () => {
     try {
@@ -42,6 +46,10 @@ function MasterTakah() {
     fetchTakah();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const filteredTakah = useMemo(() => {
     return dataTakah.filter((item) => {
       const keyword = search.toLowerCase();
@@ -53,6 +61,11 @@ function MasterTakah() {
       );
     });
   }, [dataTakah, search]);
+
+  const paginatedTakah = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredTakah.slice(start, start + itemsPerPage);
+  }, [filteredTakah, currentPage]);
 
   const handleOpenAddModal = () => {
     setForm({ ...initialForm, order: dataTakah.length + 1 });
@@ -141,7 +154,7 @@ function MasterTakah() {
 
             <button
               onClick={handleOpenAddModal}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#0f5f99] shadow-sm transition hover:scale-[1.01] sm:w-auto"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#004271] shadow-sm transition hover:scale-[1.01] sm:w-auto"
             >
               <Plus size={16} />
               Tambah Master
@@ -190,23 +203,31 @@ function MasterTakah() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="5" className="px-4 py-8 text-center text-xs text-slate-500">
+                    <td
+                      colSpan="5"
+                      className="px-4 py-8 text-center text-xs text-slate-500"
+                    >
                       Memuat data Master Takah...
                     </td>
                   </tr>
                 ) : filteredTakah.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-4 py-8 text-center text-xs text-slate-500">
+                    <td
+                      colSpan="5"
+                      className="px-4 py-8 text-center text-xs text-slate-500"
+                    >
                       Belum ada data Master Takah.
                     </td>
                   </tr>
                 ) : (
-                  filteredTakah.map((item, index) => (
+                  paginatedTakah.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-xs text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
 
                       <td className="px-4 py-3">
                         <span className="rounded-lg bg-blue-50 px-3 py-1 font-bold text-blue-700">
@@ -247,6 +268,13 @@ function MasterTakah() {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredTakah.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 

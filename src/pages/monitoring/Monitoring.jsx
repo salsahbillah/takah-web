@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { getAllMonitoring } from "../../services/monitoringService";
+import Pagination from "../../components/common/Pagination";
 
 function Monitoring() {
   const [monitoring, setMonitoring] = useState([]);
@@ -17,6 +18,9 @@ function Monitoring() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("semua");
   const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchMonitoring = async () => {
     try {
@@ -35,6 +39,10 @@ function Monitoring() {
     fetchMonitoring();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
   const filteredMonitoring = useMemo(() => {
     return monitoring.filter((item) => {
       const keyword = search.toLowerCase();
@@ -51,6 +59,11 @@ function Monitoring() {
       return matchSearch && matchStatus;
     });
   }, [monitoring, search, statusFilter]);
+
+  const paginatedMonitoring = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredMonitoring.slice(start, start + itemsPerPage);
+  }, [filteredMonitoring, currentPage]);
 
   const summary = {
     total: monitoring.length,
@@ -221,12 +234,14 @@ function Monitoring() {
                     </td>
                   </tr>
                 ) : (
-                  filteredMonitoring.map((item, index) => (
+                  paginatedMonitoring.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-xs text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
 
                       <td className="px-4 py-3 font-extrabold text-slate-900">
                         {item.nomor_surat || "-"}
@@ -271,6 +286,13 @@ function Monitoring() {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredMonitoring.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 

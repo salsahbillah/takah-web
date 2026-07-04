@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Clock3,
+  Download,
   Edit,
   Eye,
   FileText,
@@ -12,6 +13,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 import {
   createSuratKeluar,
@@ -23,6 +25,9 @@ import {
 
 import { getAllTemplateSurat } from "../../services/templateSuratService";
 import { getAllParameterSurat } from "../../services/parameterSuratService";
+import Pagination from "../../components/common/Pagination";
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 5;
 
 const initialForm = {
   takah_id: "",
@@ -75,7 +80,9 @@ function BuatSurat() {
   useEffect(() => {
     fetchData();
   }, []);
-
+  useEffect(() => {
+  setCurrentPage(1);
+}, [search, statusFilter]);
   const selectedTemplate = templates.find(
     (item) => String(item.id) === String(form.template_id)
   );
@@ -99,19 +106,18 @@ function BuatSurat() {
 
       return matchSearch && matchStatus;
     });
+
   }, [suratList, search, statusFilter]);
+  const paginatedSurat = useMemo(() => {
+  const start = (currentPage - 1) * itemsPerPage;
+  return filteredSurat.slice(start, start + itemsPerPage);
+}, [filteredSurat, currentPage]);
 
   const totalSurat = suratList.length;
   const totalDraft = suratList.filter((item) => item.status === "draft").length;
-  const totalPending = suratList.filter(
-    (item) => item.status === "pending"
-  ).length;
-  const totalApproved = suratList.filter(
-    (item) => item.status === "approved"
-  ).length;
-  const totalRejected = suratList.filter(
-    (item) => item.status === "rejected"
-  ).length;
+  const totalPending = suratList.filter((item) => item.status === "pending").length;
+  const totalApproved = suratList.filter((item) => item.status === "approved").length;
+  const totalRejected = suratList.filter((item) => item.status === "rejected").length;
 
   const summaryCards = [
     {
@@ -165,6 +171,49 @@ function BuatSurat() {
     if (status === "approved") return "bg-emerald-100 text-emerald-700";
     if (status === "rejected") return "bg-red-100 text-red-700";
     return "bg-slate-100 text-slate-700";
+  };
+
+  const handleDownloadSurat = async (id) => {
+    try {
+      const result = await getSuratKeluarById(id);
+      const surat = result.data;
+
+      if (!surat || surat.status !== "approved") {
+        alert("Surat hanya bisa diunduh jika sudah approved");
+        return;
+      }
+
+      const doc = new jsPDF("p", "mm", "a4");
+      const marginX = 20;
+      const pageWidth = 170;
+      let y = 20;
+
+      doc.setFont("times", "normal");
+      doc.setFontSize(12);
+
+      const content = surat.generated_content || "Isi surat belum tersedia.";
+      const lines = doc.splitTextToSize(content, pageWidth);
+
+      lines.forEach((line) => {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.text(line, marginX, y);
+        y += 7;
+      });
+
+      const fileName = `${surat.nomor_surat || "surat-keluar"}`.replaceAll(
+        "/",
+        "-"
+      );
+
+      doc.save(`${fileName}.pdf`);
+    } catch (error) {
+      console.error(error);
+      alert("Gagal mengunduh surat");
+    }
   };
 
   const openAddModal = () => {
@@ -248,19 +297,13 @@ function BuatSurat() {
   };
 
   const validateForm = () => {
-    if (
-      !form.template_id ||
-      !form.tujuan_surat ||
-      !form.perihal ||
-      !form.tanggal_surat
-    ) {
+    if (!form.template_id || !form.tujuan_surat || !form.perihal || !form.tanggal_surat) {
       alert("Template, tujuan, perihal, dan tanggal surat wajib diisi");
       return false;
     }
 
     const emptyRequiredParameter = selectedParameters.find(
-      (item) =>
-        item.is_required && !form.parameter_values?.[item.parameter_key]
+      (item) => item.is_required && !form.parameter_values?.[item.parameter_key]
     );
 
     if (emptyRequiredParameter) {
@@ -456,28 +499,35 @@ function BuatSurat() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
+                    <td
+                      colSpan="8"
+                      className="px-4 py-8 text-center text-slate-500"
+                    >
                       Memuat data surat...
                     </td>
                   </tr>
                 ) : filteredSurat.length > 0 ? (
-                  filteredSurat.map((item, index) => (
+                  paginatedSurat.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+
                       <td className="px-4 py-3 font-bold text-slate-900">
                         {item.nomor_surat}
                       </td>
+
                       <td className="px-4 py-3">
                         <span className="rounded-lg bg-blue-50 px-3 py-1 text-xs font-extrabold text-blue-700">
                           {item.takah_code}
                         </span>
                       </td>
+
                       <td className="px-4 py-3">{item.tujuan_surat}</td>
                       <td className="px-4 py-3">{item.perihal}</td>
                       <td className="px-4 py-3">{item.tanggal_surat}</td>
+
                       <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(
@@ -487,6 +537,7 @@ function BuatSurat() {
                           {getStatusLabel(item.status)}
                         </span>
                       </td>
+
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <button
@@ -496,6 +547,16 @@ function BuatSurat() {
                           >
                             <Eye size={15} />
                           </button>
+
+                          {item.status === "approved" && (
+                            <button
+                              onClick={() => handleDownloadSurat(item.id)}
+                              className="rounded-lg bg-emerald-50 p-2 text-emerald-600 transition hover:bg-emerald-100"
+                              title="Unduh Surat"
+                            >
+                              <Download size={15} />
+                            </button>
+                          )}
 
                           {item.status === "draft" && (
                             <>
@@ -522,13 +583,22 @@ function BuatSurat() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
+                    <td
+                      colSpan="8"
+                      className="px-4 py-8 text-center text-slate-500"
+                    >
                       Belum ada data surat.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+            <Pagination
+                currentPage={currentPage}
+                totalItems={filteredSurat.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                />
           </div>
         </div>
       </div>
@@ -745,7 +815,17 @@ function BuatSurat() {
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {selectedSurat.status === "approved" && (
+                  <button
+                    onClick={() => handleDownloadSurat(selectedSurat.id)}
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                  >
+                    <Download size={15} />
+                    Unduh PDF
+                  </button>
+                )}
+
                 <button
                   onClick={closeDetailModal}
                   className="rounded-xl bg-blue-600 px-5 py-3 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700"

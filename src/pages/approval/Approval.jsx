@@ -2,15 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Clock3,
+  Download,
   Eye,
   FileText,
   Search,
   X,
   XCircle,
 } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 import { getAllApproval, updateApproval } from "../../services/approvalService";
 import { getSuratKeluarById } from "../../services/suratKeluarService";
+import Pagination from "../../components/common/Pagination";
 
 function Approval() {
   const [approvals, setApprovals] = useState([]);
@@ -21,6 +24,9 @@ function Approval() {
   const [statusFilter, setStatusFilter] = useState("semua");
   const [loading, setLoading] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchApprovals = async () => {
     try {
@@ -39,6 +45,10 @@ function Approval() {
     fetchApprovals();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
   const filteredApprovals = useMemo(() => {
     return approvals.filter((item) => {
       const keyword = search.toLowerCase();
@@ -56,11 +66,19 @@ function Approval() {
     });
   }, [approvals, search, statusFilter]);
 
+  const paginatedApprovals = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredApprovals.slice(start, start + itemsPerPage);
+  }, [filteredApprovals, currentPage]);
+
   const summary = {
     total: approvals.length,
-    pending: approvals.filter((item) => item.approval_status === "pending").length,
-    approved: approvals.filter((item) => item.approval_status === "approved").length,
-    rejected: approvals.filter((item) => item.approval_status === "rejected").length,
+    pending: approvals.filter((item) => item.approval_status === "pending")
+      .length,
+    approved: approvals.filter((item) => item.approval_status === "approved")
+      .length,
+    rejected: approvals.filter((item) => item.approval_status === "rejected")
+      .length,
   };
 
   const getStatusClass = (status) => {
@@ -75,6 +93,51 @@ function Approval() {
     if (status === "approved") return "Approved";
     if (status === "rejected") return "Rejected";
     return "-";
+  };
+
+  const handleDownloadSurat = (surat) => {
+    if (!surat || surat.status !== "approved") {
+      alert("Surat hanya bisa diunduh jika sudah approved");
+      return;
+    }
+
+    const doc = new jsPDF("p", "mm", "a4");
+    const marginX = 20;
+    const pageWidth = 170;
+    let y = 20;
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+
+    const content = surat.generated_content || "Isi surat belum tersedia.";
+    const lines = doc.splitTextToSize(content, pageWidth);
+
+    lines.forEach((line) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.text(line, marginX, y);
+      y += 7;
+    });
+
+    const fileName = `${surat.nomor_surat || "surat-keluar"}`.replaceAll(
+      "/",
+      "-"
+    );
+
+    doc.save(`${fileName}.pdf`);
+  };
+
+  const handleDownloadApproval = async (approval) => {
+    try {
+      const result = await getSuratKeluarById(approval.surat_keluar_id);
+      handleDownloadSurat(result.data);
+    } catch (error) {
+      alert("Gagal mengunduh surat");
+      console.error(error);
+    }
   };
 
   const openDetail = async (approval) => {
@@ -116,7 +179,11 @@ function Approval() {
         notes,
       });
 
-      alert(status === "approved" ? "Surat berhasil diapprove" : "Surat berhasil direject");
+      alert(
+        status === "approved"
+          ? "Surat berhasil diapprove"
+          : "Surat berhasil direject"
+      );
 
       closeDetail();
       fetchApprovals();
@@ -127,10 +194,34 @@ function Approval() {
   };
 
   const summaryCards = [
-    { title: "Total Approval", value: summary.total, icon: FileText, bgIcon: "bg-blue-100", textIcon: "text-blue-600" },
-    { title: "Pending", value: summary.pending, icon: Clock3, bgIcon: "bg-orange-100", textIcon: "text-orange-600" },
-    { title: "Approved", value: summary.approved, icon: CheckCircle2, bgIcon: "bg-emerald-100", textIcon: "text-emerald-600" },
-    { title: "Rejected", value: summary.rejected, icon: XCircle, bgIcon: "bg-red-100", textIcon: "text-red-600" },
+    {
+      title: "Total Approval",
+      value: summary.total,
+      icon: FileText,
+      bgIcon: "bg-blue-100",
+      textIcon: "text-blue-600",
+    },
+    {
+      title: "Pending",
+      value: summary.pending,
+      icon: Clock3,
+      bgIcon: "bg-orange-100",
+      textIcon: "text-orange-600",
+    },
+    {
+      title: "Approved",
+      value: summary.approved,
+      icon: CheckCircle2,
+      bgIcon: "bg-emerald-100",
+      textIcon: "text-emerald-600",
+    },
+    {
+      title: "Rejected",
+      value: summary.rejected,
+      icon: XCircle,
+      bgIcon: "bg-red-100",
+      textIcon: "text-red-600",
+    },
   ];
 
   return (
@@ -142,23 +233,29 @@ function Approval() {
             Approval Surat
           </h1>
           <p className="mt-2 max-w-3xl text-xs leading-6 text-blue-100 sm:text-sm">
-            Kelola surat keluar yang diajukan untuk direview, disetujui, atau ditolak.
+            Kelola surat keluar yang diajukan untuk direview, disetujui, atau
+            ditolak.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {summaryCards.map((card) => {
             const Icon = card.icon;
+
             return (
               <div
                 key={card.title}
                 className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.bgIcon}`}>
+                <div
+                  className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.bgIcon}`}
+                >
                   <Icon className={card.textIcon} size={20} />
                 </div>
 
-                <p className="text-xs font-semibold text-slate-600">{card.title}</p>
+                <p className="text-xs font-semibold text-slate-600">
+                  {card.title}
+                </p>
                 <h2 className="mt-1 text-2xl font-extrabold text-slate-900">
                   {card.value}
                 </h2>
@@ -174,7 +271,8 @@ function Approval() {
                 Daftar Approval Surat
               </h2>
               <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
-                Surat yang sudah diajukan dari modul Surat Keluar akan tampil di sini.
+                Surat yang sudah diajukan dari modul Surat Keluar akan tampil di
+                sini.
               </p>
             </div>
 
@@ -223,40 +321,58 @@ function Approval() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-xs text-slate-500">
+                    <td
+                      colSpan="7"
+                      className="px-4 py-8 text-center text-xs text-slate-500"
+                    >
                       Memuat data approval...
                     </td>
                   </tr>
                 ) : filteredApprovals.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-xs text-slate-500">
+                    <td
+                      colSpan="7"
+                      className="px-4 py-8 text-center text-xs text-slate-500"
+                    >
                       Belum ada data approval.
                     </td>
                   </tr>
                 ) : (
-                  filteredApprovals.map((item, index) => (
+                  paginatedApprovals.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-xs text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+
                       <td className="px-4 py-3 font-extrabold text-slate-900">
                         {item.nomor_surat}
                       </td>
+
                       <td className="px-4 py-3 font-medium">
                         {item.approver_name || "-"}
                       </td>
+
                       <td className="px-4 py-3">
-                        <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(item.approval_status)}`}>
+                        <span
+                          className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(
+                            item.approval_status
+                          )}`}
+                        >
                           {getStatusLabel(item.approval_status)}
                         </span>
                       </td>
+
                       <td className="max-w-[220px] px-4 py-3">
                         <p className="line-clamp-2">{item.notes || "-"}</p>
                       </td>
+
                       <td className="px-4 py-3">{item.created_at || "-"}</td>
+
                       <td className="px-4 py-3">
-                        <div className="flex justify-center">
+                        <div className="flex justify-center gap-2">
                           <button
                             onClick={() => openDetail(item)}
                             className="rounded-lg bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
@@ -264,6 +380,16 @@ function Approval() {
                           >
                             <Eye size={15} />
                           </button>
+
+                          {item.approval_status === "approved" && (
+                            <button
+                              onClick={() => handleDownloadApproval(item)}
+                              className="rounded-lg bg-emerald-100 p-2 text-emerald-700 transition hover:bg-emerald-200"
+                              title="Unduh Surat"
+                            >
+                              <Download size={15} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -272,6 +398,13 @@ function Approval() {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredApprovals.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
@@ -280,7 +413,9 @@ function Approval() {
           <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
             <div className="sticky top-0 z-10 flex items-center justify-between bg-gradient-to-r from-[#082f5f] to-[#2b8fd3] px-5 py-4 text-white">
               <div>
-                <h2 className="text-base font-extrabold">Review Approval Surat</h2>
+                <h2 className="text-base font-extrabold">
+                  Review Approval Surat
+                </h2>
                 <p className="mt-1 text-xs text-blue-100">
                   Periksa isi surat sebelum memberikan keputusan.
                 </p>
@@ -337,7 +472,11 @@ function Approval() {
 
                     <div>
                       <p className="text-slate-500">Status Approval</p>
-                      <span className={`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(selectedApproval.approval_status)}`}>
+                      <span
+                        className={`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(
+                          selectedApproval.approval_status
+                        )}`}
+                      >
                         {getStatusLabel(selectedApproval.approval_status)}
                       </span>
                     </div>
@@ -366,7 +505,8 @@ function Approval() {
                 <div className="max-h-[500px] overflow-auto rounded-2xl border border-slate-200 bg-slate-100 p-4">
                   <div className="mx-auto max-w-2xl rounded-xl bg-white px-8 py-7 shadow-sm">
                     <div className="whitespace-pre-wrap font-serif text-[13px] leading-7 text-slate-950">
-                      {detailData.generated_content || "Isi surat belum tersedia."}
+                      {detailData.generated_content ||
+                        "Isi surat belum tersedia."}
                     </div>
                   </div>
                 </div>
@@ -380,6 +520,16 @@ function Approval() {
               >
                 Batal
               </button>
+
+              {selectedApproval.approval_status === "approved" && (
+                <button
+                  onClick={() => handleDownloadSurat(detailData)}
+                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                >
+                  <Download size={16} />
+                  Unduh PDF
+                </button>
+              )}
 
               {selectedApproval.approval_status === "pending" && (
                 <>

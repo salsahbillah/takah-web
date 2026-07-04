@@ -1,3 +1,21 @@
+import { useEffect, useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  Clock3,
+  Download,
+  Eye,
+  FileText,
+  Pencil,
+  Plus,
+  Save,
+  Search,
+  Send,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
+import { jsPDF } from "jspdf";
+
 import { getAllTemplateSurat } from "../../services/templateSuratService";
 import { getAllParameterSurat } from "../../services/parameterSuratService";
 import {
@@ -7,22 +25,7 @@ import {
   deleteSuratKeluar,
   submitSuratKeluarApproval,
 } from "../../services/suratKeluarService";
-
-import { useEffect, useMemo, useState } from "react";
-import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  X,
-  Save,
-  FileText,
-  Clock3,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  Send,
-} from "lucide-react";
+import Pagination from "../../components/common/Pagination";
 
 const initialForm = {
   template_id: "",
@@ -50,6 +53,9 @@ function SuratKeluar() {
   const [showDetail, setShowDetail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 8;
 
   const fetchSuratKeluar = async () => {
     try {
@@ -88,10 +94,14 @@ function SuratKeluar() {
   };
 
   useEffect(() => {
-    fetchSuratKeluar();
-    fetchTemplates();
-    fetchParameters();
-  }, []);
+  fetchSuratKeluar();
+  fetchTemplates();
+  fetchParameters();
+}, []);
+
+useEffect(() => {
+  setCurrentPage(1);
+}, [search, statusFilter, templateFilter]);
 
   const selectedTemplate = useMemo(() => {
     return templates.find(
@@ -118,26 +128,31 @@ function SuratKeluar() {
   }, [suratKeluar]);
 
   const filteredSuratKeluar = useMemo(() => {
-    return suratKeluar.filter((item) => {
-      const keyword = search.toLowerCase();
+  return suratKeluar.filter((item) => {
+    const keyword = search.toLowerCase();
 
-      const matchSearch =
-        item.nomor_surat?.toLowerCase().includes(keyword) ||
-        item.takah_code?.toLowerCase().includes(keyword) ||
-        item.tujuan_surat?.toLowerCase().includes(keyword) ||
-        item.perihal?.toLowerCase().includes(keyword) ||
-        item.status?.toLowerCase().includes(keyword);
+    const matchSearch =
+      item.nomor_surat?.toLowerCase().includes(keyword) ||
+      item.takah_code?.toLowerCase().includes(keyword) ||
+      item.tujuan_surat?.toLowerCase().includes(keyword) ||
+      item.perihal?.toLowerCase().includes(keyword) ||
+      item.status?.toLowerCase().includes(keyword);
 
-      const matchStatus =
-        statusFilter === "semua" || item.status === statusFilter;
+    const matchStatus =
+      statusFilter === "semua" || item.status === statusFilter;
 
-      const matchTemplate =
-        templateFilter === "semua" ||
-        String(item.takah_id) === String(templateFilter);
+    const matchTemplate =
+      templateFilter === "semua" ||
+      String(item.takah_id) === String(templateFilter);
 
-      return matchSearch && matchStatus && matchTemplate;
-    });
-  }, [suratKeluar, search, statusFilter, templateFilter]);
+    return matchSearch && matchStatus && matchTemplate;
+  });
+}, [suratKeluar, search, statusFilter, templateFilter]);
+
+const paginatedSuratKeluar = useMemo(() => {
+  const start = (currentPage - 1) * itemsPerPage;
+  return filteredSuratKeluar.slice(start, start + itemsPerPage);
+}, [filteredSuratKeluar, currentPage]);
 
   const handleOpenAddModal = () => {
     setForm(initialForm);
@@ -316,6 +331,41 @@ function SuratKeluar() {
     return "-";
   };
 
+  const handleDownloadSurat = (surat) => {
+    if (!surat || surat.status !== "approved") {
+      alert("Surat hanya bisa diunduh jika sudah approved");
+      return;
+    }
+
+    const doc = new jsPDF("p", "mm", "a4");
+    const marginX = 20;
+    const pageWidth = 170;
+    let y = 20;
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+
+    const content = surat.generated_content || "Isi surat belum tersedia.";
+    const lines = doc.splitTextToSize(content, pageWidth);
+
+    lines.forEach((line) => {
+      if (y > 280) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.text(line, marginX, y);
+      y += 7;
+    });
+
+    const fileName = `${surat.nomor_surat || "surat-keluar"}`.replaceAll(
+      "/",
+      "-"
+    );
+
+    doc.save(`${fileName}.pdf`);
+  };
+
   const renderParameterInput = (parameter) => {
     const value = form.parameter_values[parameter.parameter_key] || "";
 
@@ -385,53 +435,47 @@ function SuratKeluar() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 px-3 py-4 text-[13px] sm:px-4 lg:px-5">
-      <div className="mx-auto w-full max-w-[1180px] space-y-4">
-        <div className="rounded-2xl bg-gradient-to-r from-[#082f5f] via-[#0f5f99] to-[#2b8fd3] p-5 text-white shadow-md sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold text-blue-100">Data Surat</p>
-
-              <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">
-                Surat Keluar
-              </h1>
-
-              <p className="mt-2 max-w-3xl text-xs leading-6 text-blue-100 sm:text-sm">
-                Buat surat keluar berdasarkan Template Surat, Parameter Surat,
-                dan Config Nomor Surat.
-              </p>
-            </div>
-
-            <button
-              onClick={handleOpenAddModal}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#0f5f99] shadow-sm transition hover:scale-[1.01] sm:w-auto"
-            >
-              <Plus size={16} />
-              Tambah Surat
-            </button>
+    <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
+      <div className="mx-auto w-full max-w-[1450px] px-2">
+        <div className="mb-4 flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-[#002248] to-[#2680BE] p-4 text-white shadow-md md:flex-row md:items-center">
+          <div>
+            <p className="text-xs text-white/75">Data Surat</p>
+            <h1 className="mt-1 text-xl font-extrabold">Surat Keluar</h1>
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/75">
+              Buat dan kelola surat keluar berdasarkan template, parameter, dan
+              nomor surat otomatis.
+            </p>
           </div>
+
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            className="flex w-fit items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
+          >
+            <Plus size={16} />
+            Tambah Surat
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {summaryCards.map((card) => {
             const Icon = card.icon;
 
             return (
               <div
                 key={card.title}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-md"
               >
                 <div
-                  className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${card.bgIcon}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.bgIcon}`}
                 >
-                  <Icon className={card.textIcon} size={20} />
+                  <Icon className={card.textIcon} size={21} />
                 </div>
 
-                <p className="text-xs font-semibold text-slate-600">
+                <p className="mt-4 text-xs font-semibold text-slate-500">
                   {card.title}
                 </p>
-
-                <h2 className="mt-1 text-2xl font-extrabold text-slate-900">
+                <h2 className="mt-1 text-xl font-extrabold text-slate-900">
                   {card.value}
                 </h2>
               </div>
@@ -439,20 +483,20 @@ function SuratKeluar() {
           })}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-          <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="mb-4 flex flex-col justify-between gap-3 xl:flex-row xl:items-center">
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
                 Daftar Surat Keluar
               </h2>
-              <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
-                Data surat yang sudah dibuat dan tersimpan sebagai draft,
-                pending, approved, rejected, atau completed.
+              <p className="mt-1 text-xs text-slate-500">
+                Data surat yang sudah dibuat dan tersimpan sesuai status
+                pengajuan.
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <div className="relative w-full sm:w-72">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative">
                 <Search
                   size={16}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -461,15 +505,15 @@ function SuratKeluar() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari nomor, tujuan, atau perihal..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-xs outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  placeholder="Cari surat..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-xs outline-none transition hover:border-blue-300 focus:border-blue-400 sm:w-64"
                 />
               </div>
 
               <select
                 value={templateFilter}
                 onChange={(e) => setTemplateFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-600 outline-none transition hover:border-blue-300 focus:border-blue-400"
               >
                 <option value="semua">Semua Jenis</option>
                 {templates.map((template) => (
@@ -482,7 +526,7 @@ function SuratKeluar() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-medium text-slate-600 outline-none transition hover:border-blue-300 focus:border-blue-400"
               >
                 <option value="semua">Semua Status</option>
                 <option value="draft">Draft</option>
@@ -494,18 +538,18 @@ function SuratKeluar() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-100">
-            <table className="w-full min-w-[980px] border-collapse">
+          <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
+            <table className="w-full min-w-[1100px] border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-600">
-                  <th className="w-12 px-4 py-3 font-bold">No</th>
-                  <th className="px-4 py-3 font-bold">Nomor Surat</th>
-                  <th className="px-4 py-3 font-bold">Jenis</th>
-                  <th className="px-4 py-3 font-bold">Tujuan</th>
-                  <th className="px-4 py-3 font-bold">Perihal</th>
-                  <th className="px-4 py-3 font-bold">Tanggal</th>
-                  <th className="px-4 py-3 font-bold">Status</th>
-                  <th className="px-4 py-3 text-center font-bold">Aksi</th>
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
+                  <th className="px-4 py-2 font-bold">No</th>
+                  <th className="px-4 py-2 font-bold">Nomor Surat</th>
+                  <th className="px-4 py-2 font-bold">Jenis</th>
+                  <th className="px-4 py-2 font-bold">Tujuan</th>
+                  <th className="px-4 py-2 font-bold">Perihal</th>
+                  <th className="px-4 py-2 font-bold">Tanggal</th>
+                  <th className="px-4 py-2 font-bold">Status</th>
+                  <th className="px-4 py-2 text-right font-bold">Aksi</th>
                 </tr>
               </thead>
 
@@ -514,7 +558,7 @@ function SuratKeluar() {
                   <tr>
                     <td
                       colSpan="8"
-                      className="px-4 py-8 text-center text-xs text-slate-500"
+                      className="px-4 py-8 text-center text-slate-500"
                     >
                       Memuat data Surat Keluar...
                     </td>
@@ -523,42 +567,42 @@ function SuratKeluar() {
                   <tr>
                     <td
                       colSpan="8"
-                      className="px-4 py-8 text-center text-xs text-slate-500"
+                      className="px-4 py-8 text-center text-slate-500"
                     >
                       Belum ada data Surat Keluar.
                     </td>
                   </tr>
                 ) : (
-                  filteredSuratKeluar.map((item, index) => (
+                  paginatedSuratKeluar.map((item, index) => (
                     <tr
                       key={item.id}
-                      className="border-b border-slate-100 text-xs text-slate-700 transition hover:bg-blue-50/40"
+                      className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{index + 1}</td>
+                      <td className="px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>
 
-                      <td className="px-4 py-3 font-extrabold text-slate-900">
+                      <td className="px-4 py-2 font-extrabold text-slate-900">
                         {item.nomor_surat || "-"}
                       </td>
 
-                      <td className="px-4 py-3">
-                        <span className="rounded-lg bg-blue-50 px-3 py-1 font-bold text-blue-700">
+                      <td className="px-4 py-2">
+                        <span className="rounded-lg bg-blue-50 px-3 py-1 font-extrabold text-blue-700">
                           {item.takah_code || "-"}
                         </span>
                       </td>
 
-                      <td className="max-w-[170px] px-4 py-3">
+                      <td className="max-w-[150px] px-4 py-2">
                         <p className="line-clamp-2">
                           {item.tujuan_surat || "-"}
                         </p>
                       </td>
 
-                      <td className="max-w-[220px] px-4 py-3">
+                      <td className="max-w-[180px] px-4 py-2">
                         <p className="line-clamp-2">{item.perihal || "-"}</p>
                       </td>
 
-                      <td className="px-4 py-3">{item.tanggal_surat || "-"}</td>
+                      <td className="px-4 py-2">{item.tanggal_surat || "-"}</td>
 
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <span
                           className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(
                             item.status
@@ -568,19 +612,32 @@ function SuratKeluar() {
                         </span>
                       </td>
 
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-4 py-2">
+                        <div className="flex items-center justify-end gap-2">
                           <button
+                            type="button"
                             onClick={() => handleDetail(item)}
-                            className="rounded-lg bg-blue-100 p-2 text-blue-700 transition hover:bg-blue-200"
+                            className="rounded-lg bg-blue-50 p-2 text-blue-600 transition hover:bg-blue-100 hover:shadow-sm"
                             title="Detail"
                           >
                             <Eye size={15} />
                           </button>
 
+                          {item.status === "approved" && (
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadSurat(item)}
+                              className="rounded-lg bg-emerald-50 p-2 text-emerald-600 transition hover:bg-emerald-100 hover:shadow-sm"
+                              title="Unduh Surat"
+                            >
+                              <Download size={15} />
+                            </button>
+                          )}
+
                           <button
+                            type="button"
                             onClick={() => handleEdit(item)}
-                            className="rounded-lg bg-amber-100 p-2 text-amber-700 transition hover:bg-amber-200"
+                            className="rounded-lg bg-amber-50 p-2 text-amber-600 transition hover:bg-amber-100 hover:shadow-sm"
                             title="Edit"
                           >
                             <Pencil size={15} />
@@ -588,8 +645,9 @@ function SuratKeluar() {
 
                           {item.status === "draft" && (
                             <button
+                              type="button"
                               onClick={() => handleSubmitApproval(item.id)}
-                              className="rounded-lg bg-emerald-100 p-2 text-emerald-700 transition hover:bg-emerald-200"
+                              className="rounded-lg bg-emerald-50 p-2 text-emerald-600 transition hover:bg-emerald-100 hover:shadow-sm"
                               title="Ajukan Approval"
                             >
                               <Send size={15} />
@@ -597,8 +655,9 @@ function SuratKeluar() {
                           )}
 
                           <button
+                            type="button"
                             onClick={() => handleDelete(item.id)}
-                            className="rounded-lg bg-red-100 p-2 text-red-700 transition hover:bg-red-200"
+                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100 hover:shadow-sm"
                             title="Hapus"
                           >
                             <Trash2 size={15} />
@@ -611,6 +670,13 @@ function SuratKeluar() {
               </tbody>
             </table>
           </div>
+
+         <Pagination
+              currentPage={currentPage}
+              totalItems={filteredSuratKeluar.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
         </div>
       </div>
 
@@ -628,6 +694,7 @@ function SuratKeluar() {
               </div>
 
               <button
+                type="button"
                 onClick={handleCloseModal}
                 className="rounded-lg p-2 transition hover:bg-white/10"
               >
@@ -635,7 +702,7 @@ function SuratKeluar() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 p-5">
+            <form onSubmit={handleSubmit} className="space-y-4 p-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-xs font-bold text-slate-700">
@@ -782,7 +849,7 @@ function SuratKeluar() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-xl bg-[#2680BE] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#1f6fa7] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Save size={16} />
                   {saving
@@ -811,6 +878,7 @@ function SuratKeluar() {
               </div>
 
               <button
+                type="button"
                 onClick={handleCloseDetail}
                 className="rounded-lg p-2 transition hover:bg-white/10"
               >
@@ -818,7 +886,7 @@ function SuratKeluar() {
               </button>
             </div>
 
-            <div className="grid gap-4 p-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+            <div className="grid gap-4 p-4 lg:grid-cols-[260px_minmax(0,1fr)]">
               <div className="space-y-3">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
@@ -903,8 +971,20 @@ function SuratKeluar() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 flex justify-end border-t border-slate-200 bg-white px-5 py-4">
+            <div className="sticky bottom-0 flex justify-end gap-2 border-t border-slate-200 bg-white px-5 py-4">
+              {detailData.status === "approved" && (
+                <button
+                  type="button"
+                  onClick={() => handleDownloadSurat(detailData)}
+                  className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700"
+                >
+                  <Download size={16} />
+                  Unduh PDF
+                </button>
+              )}
+
               <button
+                type="button"
                 onClick={handleCloseDetail}
                 className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
               >

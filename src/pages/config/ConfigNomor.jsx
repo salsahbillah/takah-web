@@ -19,6 +19,7 @@ import {
   getAllConfigNomor,
   updateConfigNomor,
 } from "../../services/configNomorService";
+import Pagination from "../../components/common/Pagination";
 
 const initialForm = {
   takah_id: "",
@@ -36,6 +37,9 @@ function ConfigNomor() {
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchConfigs = async () => {
     try {
@@ -65,6 +69,10 @@ function ConfigNomor() {
     fetchTakah();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, resetFilter]);
+
   const filteredConfigs = useMemo(() => {
     return configs.filter((item) => {
       const search = searchQuery.toLowerCase();
@@ -81,6 +89,11 @@ function ConfigNomor() {
       return matchSearch && matchReset;
     });
   }, [configs, searchQuery, resetFilter]);
+
+  const paginatedConfigs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredConfigs.slice(start, start + itemsPerPage);
+  }, [filteredConfigs, currentPage]);
 
   const totalConfig = configs.length;
   const totalMonthly = configs.filter(
@@ -307,9 +320,10 @@ function ConfigNomor() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full min-w-[980px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[1040px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
+                  <th className="px-4 py-3 font-bold">No</th>
                   <th className="px-4 py-3 font-bold">Jenis Surat</th>
                   <th className="px-4 py-3 font-bold">Company</th>
                   <th className="px-4 py-3 font-bold">Divisi</th>
@@ -324,18 +338,22 @@ function ConfigNomor() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Memuat data config nomor surat...
                     </td>
                   </tr>
                 ) : filteredConfigs.length > 0 ? (
-                  filteredConfigs.map((item) => (
+                  paginatedConfigs.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -413,7 +431,7 @@ function ConfigNomor() {
                 ) : (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-4 py-8 text-center text-slate-500"
                     >
                       Data config nomor surat tidak ditemukan.
@@ -424,15 +442,12 @@ function ConfigNomor() {
             </table>
           </div>
 
-          <div className="mt-4 text-xs text-slate-500">
-            Menampilkan{" "}
-            <span className="font-bold text-slate-700">
-              {filteredConfigs.length}
-            </span>{" "}
-            dari{" "}
-            <span className="font-bold text-slate-700">{configs.length}</span>{" "}
-            data config nomor.
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredConfigs.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
