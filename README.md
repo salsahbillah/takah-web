@@ -1,6 +1,8 @@
 # TAKAH
 
-Frontend Smart Letter Management System built with React, Vite, Tailwind CSS, and Golang REST API.
+Frontend **Takah (Smart Letter Management System)** merupakan aplikasi pengelolaan surat digital yang dibangun menggunakan **React, Vite, Tailwind CSS**, dan terintegrasi dengan **REST API Golang Gin**.
+
+Aplikasi ini dikembangkan sebagai bagian dari Program Magang Industri di **PT Cyberss Blitz Nusantara** untuk membantu proses administrasi surat secara digital mulai dari pembuatan surat, approval, monitoring, hingga pengelolaan data master.
 
 ---
 
@@ -14,16 +16,18 @@ Frontend Smart Letter Management System built with React, Vite, Tailwind CSS, an
 - Golang Gin REST API
 - MySQL
 - JWT Authentication
+- Lucide React
 
 ---
 
 # Project Structure
 
-```
+```text
 src
 │
 ├── assets
 ├── components
+├── config
 ├── context
 ├── hooks
 ├── layouts
@@ -39,68 +43,120 @@ src
 
 ---
 
-# Progress Pengerjaan Frontend
+# Fitur Aplikasi
 
-```text
-✅ Setup Project
-        │
-        ▼
-✅ Rapikan Struktur Folder
-        │
-        ▼
-✅ Install Tailwind CSS
-        │
-        ▼
-✅ Setup Tailwind CSS
-        │
-        ▼
-✅ Bersihkan File Bawaan Vite
-        │
-        ▼
-✅ Setup Axios
-        │
-        ▼
-✅ Setup React Router
-        │
-        ▼
-✅ Setup Auth Context
-        │
-        ▼
-✅ Setup Protected Route
-        │
-        ▼
-✅ Halaman Login
-        │
-        ▼
-✅ Integrasi Login API
-        │
-        ▼
-✅ Authentication (JWT)
-        │
-        ▼
-⏳ Main Layout
-        │
-        ▼
-⏳ Sidebar
-        │
-        ▼
-⏳ Navbar
-        │
-        ▼
-⏳ Dashboard
-        │
-        ▼
-⏳ Modul Aplikasi
-        │
-        ▼
-⏳ Testing
-        │
-        ▼
-⏳ Finishing UI
-        │
-        ▼
-⏳ Deploy
-```
+## Authentication
+
+- Login
+- JWT Authentication
+- Protected Route
+- Logout
+- Session Management
+
+---
+
+## Dashboard
+
+- Dashboard Admin
+- Ringkasan Statistik Surat
+- Informasi Profil User
+- Navigasi Cepat
+
+---
+
+## Master Takah
+
+- Tambah Master
+- Edit Master
+- Hapus Master
+- Pencarian Data
+
+---
+
+## Parameter Surat
+
+- CRUD Parameter
+- Template Relation
+- Dynamic Input
+- Search & Filter
+- Pagination
+
+---
+
+## Template Surat
+
+- CRUD Template
+- Placeholder Surat
+- Preview Template
+- Search
+- Pagination
+
+---
+
+## Config Nomor Surat
+
+- CRUD Config
+- Generate Format Nomor
+- Reset Bulanan
+- Reset Tahunan
+- Preview Nomor Surat
+
+---
+
+## Surat Keluar
+
+- CRUD Surat Keluar
+- Generate Nomor Surat
+- Dynamic Parameter
+- Draft
+- Submit Approval
+- Download PDF
+- Search
+- Filter
+- Pagination
+
+---
+
+## Surat Masuk
+
+- CRUD Surat Masuk
+- Upload Dokumen
+- Download Lampiran
+- Search
+- Filter
+- Pagination
+
+---
+
+## Approval
+
+- Detail Surat
+- Approve Surat
+- Reject Surat
+- Catatan Approval
+- Download Surat
+- Search
+- Filter
+- Pagination
+
+---
+
+## Monitoring
+
+- Monitoring Status Surat
+- Riwayat Approval
+- Detail Surat
+- Search
+- Filter
+- Pagination
+
+---
+
+## Profile
+
+- Informasi User
+- Role User
+- Logout
 
 ---
 
@@ -110,7 +166,7 @@ src
 User
  │
  ▼
-Login Page
+Login
  │
  ▼
 Input Email & Password
@@ -160,79 +216,56 @@ Dashboard
 
 ---
 
-# Task List
+# Status Pengembangan
 
-## Setup Project
-
-| Task | Status |
-|------|:------:|
-| React Vite | ✅ |
-| Tailwind CSS | ✅ |
-| Axios | ✅ |
-| React Router | ✅ |
-| Auth Context | ✅ |
-| Protected Route | ✅ |
-
----
-
-## Authentication
-
-| Task | Status |
-|------|:------:|
-| Login UI | ✅ |
-| Login API | ✅ |
-| JWT Authentication | ✅ |
-| Simpan Token | ✅ |
-| Simpan User | ✅ |
-| Simpan Role | ✅ |
-| Logout | ⏳ |
-
----
-
-## Layout
-
-| Task | Status |
-|------|:------:|
-| Main Layout | ⏳ |
-| Sidebar | ⏳ |
-| Navbar | ⏳ |
-| Menu Berdasarkan Role | ⏳ |
-
----
-
-## Dashboard
-
-| Task | Status |
-|------|:------:|
-| Dashboard Admin | ⏳ |
-| Dashboard User | ⏳ |
-| Summary Card | ⏳ |
-| Statistik Surat | ⏳ |
-
----
-
-## Modul
-
-| Module | Status |
+| Modul | Status |
 |--------|:------:|
-| Master Takah | ⏳ |
-| Parameter Surat | ⏳ |
-| Template Surat | ⏳ |
-| Config Nomor Surat | ⏳ |
-| Surat Keluar | ⏳ |
-| Surat Masuk | ⏳ |
-| Approval | ⏳ |
-| Monitoring | ⏳ |
-| Profile | ⏳ |
+| Authentication | ✅ |
+| Dashboard | ✅ |
+| Master Takah | ✅ |
+| Parameter Surat | ✅ |
+| Template Surat | ✅ |
+| Config Nomor Surat | ✅ |
+| Surat Keluar | ✅ |
+| Surat Masuk | ✅ |
+| Approval | ✅ |
+| Monitoring | ✅ |
+| Profile | ✅ |
+| Responsive UI | ✅ |
+| Integrasi REST API | ✅ |
 
 ---
 
-## Next Development
+# Cara Menjalankan Project
 
-- Main Layout
-- Sidebar
-- Navbar
-- Logout
-- Dashboard
-- CRUD Module
-- Responsive UI
+Install dependency
+
+```bash
+npm install
+```
+
+Menjalankan project
+
+```bash
+npm run dev
+```
+
+Build production
+
+```bash
+npm run build
+```
+
+---
+
+# Backend
+
+Repository backend menggunakan **Golang Gin** dan terintegrasi dengan MySQL melalui REST API.
+
+---
+
+# Catatan
+
+Project ini merupakan hasil implementasi selama Program Magang Industri di **PT Cybers Blitz Nusantara**.
+
+Seluruh fitur utama yang menjadi ruang lingkup pengembangan telah diselesaikan. Apabila di kemudian hari terdapat perubahan kebutuhan atau penyesuaian fitur, perubahan tersebut menjadi catatan untuk pengembangan lanjutan di luar periode pelaksanaan magang.

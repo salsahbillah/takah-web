@@ -75,12 +75,7 @@ import {
       path: "/surat-keluar",
       icon: FileCheck,
     },
-    {
-      title: "Surat Masuk",
-      path: "/surat-masuk",
-      icon: FileInput,
-    },
-    {
+      {
       title: "Monitoring Surat",
       path: "/monitoring",
       icon: MonitorCheck,
