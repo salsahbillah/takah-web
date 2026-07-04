@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
+import Alert from "../../components/common/Alert";
 import { useAuth } from "../../context/AuthContext";
 import { loginUser } from "../../services/authService";
 
@@ -17,18 +18,40 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    const logoutMessage = sessionStorage.getItem("logout_message");
+
+    if (logoutMessage) {
+      setSuccess(logoutMessage);
+      sessionStorage.removeItem("logout_message");
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 2500);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
       const result = await loginUser({ email, password });
-      login(result.data.token, result.data.user);
-      navigate("/dashboard");
+
+      setSuccess("Login berhasil. Mengarahkan ke dashboard.");
+
+      setTimeout(() => {
+        login(result.data.token, result.data.user);
+        navigate("/dashboard");
+      }, 1200);
     } catch (err) {
       setError(err.response?.data?.message || "Login gagal. Coba lagi.");
     } finally {
@@ -41,13 +64,13 @@ function Login() {
       className="relative min-h-screen overflow-hidden bg-cover bg-center"
       style={{ backgroundImage: `url(${loginBg})` }}
     >
-      {/* Overlay biru transparan */}
-      <div className="absolute inset-0 bg-[#002248]/60" />
+      <div className="absolute inset-0 bg-[#002248]/10" />
+
+      <Alert type="error" message={error} onClose={() => setError("")} />
+      <Alert type="success" message={success} onClose={() => setSuccess("")} />
 
       <section className="relative z-10 flex min-h-screen items-center justify-between px-16 py-10">
-        {/* KIRI */}
         <div className="w-[50%] text-white">
-          {/* Logo */}
           <div className="absolute left-16 top-10 flex items-center gap-3">
             <img
               src={logoTakah}
@@ -59,7 +82,6 @@ function Login() {
             </h1>
           </div>
 
-          {/* Konten kiri dinaikkan */}
           <div className="-mt-10 max-w-lg">
             <h2 className="text-[42px] font-black leading-[1.05] tracking-tight">
               Sistem Pengelolaan <br />
@@ -75,7 +97,6 @@ function Login() {
           </div>
         </div>
 
-        {/* KANAN */}
         <div className="mr-2 flex w-[45%] justify-center">
           <div className="w-[430px] rounded-[32px] bg-white/22 px-16 py-11 shadow-2xl backdrop-blur-md">
             <h2 className="mb-10 text-center text-[36px] font-black text-white">
@@ -84,45 +105,42 @@ function Login() {
 
             <form onSubmit={handleSubmit} autoComplete="off">
               <Input
-                  label="Email"
-                  type="email"
-                  name="login_email_takah"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Masukkan email"
-                  autoComplete="off"
-                />
+                label="Email"
+                type="email"
+                name="login_email_takah"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Masukkan email"
+                autoComplete="off"
+              />
 
               <Input
-                  label="Password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan password"
-                  autoComplete="new-password"
-                  className="mt-5"
-                  rightIcon={
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                name="login_password_takah"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan password"
+                autoComplete="new-password"
+                className="mt-5"
+                rightIcon={
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="flex items-center text-white/90 transition hover:text-white"
-                    title={showPassword ? "Sembunyikan password" : "Lihat password"}
+                    title={
+                      showPassword ? "Sembunyikan password" : "Lihat password"
+                    }
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
-                  }
-                />
-
-              {error && (
-                <p className="mt-4 text-center text-xs font-semibold text-red-200">
-                  {error}
-                </p>
-              )}
+                }
+              />
 
               <div className="mt-8 flex justify-center">
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || Boolean(success)}
                   className="h-10 min-w-[150px] text-[13px]"
                 >
                   {loading ? "Loading..." : "Login"}
