@@ -20,6 +20,7 @@ import {
   updateParameterSurat,
 } from "../../services/parameterSuratService";
 import Pagination from "../../components/common/Pagination";
+import PageHeader from "../../components/layout/PageHeader";
 
 const initialForm = {
   template_id: "",
@@ -235,26 +236,14 @@ function ParameterSurat() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
       <div className="mx-auto w-full max-w-[1180px]">
-        <div className="mb-4 flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-[#002248] to-[#2680BE] p-5 text-white shadow-md transition hover:shadow-lg md:flex-row md:items-center">
-          <div>
-            <p className="text-xs text-white/75">Data Template Surat</p>
-            <h1 className="mt-1 text-xl font-extrabold">Parameter Surat</h1>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/75">
-              Kelola field dinamis yang akan digunakan pada template surat,
-              seperti nama tujuan, tanggal, tempat, jabatan, dan kebutuhan
-              input lainnya.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={openAddModal}
-            className="flex w-fit items-center gap-1 rounded-xl bg-white px-3 py-2 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
-          >
-            <Plus size={16} />
-            Tambah Parameter
-          </button>
-        </div>
+          <PageHeader
+            label="Data Template Surat"
+            title="Parameter Surat"
+            description="Kelola field dinamis yang akan digunakan pada template surat, seperti nama tujuan, tanggal, tempat, jabatan, dan kebutuhan input lainnya."
+            buttonText="Tambah Parameter"
+            buttonIcon={Plus}
+            onButtonClick={openAddModal}
+          />
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => {

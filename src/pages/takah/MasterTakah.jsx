@@ -8,6 +8,7 @@ import {
   deleteTakah,
 } from "../../services/takahService";
 import Pagination from "../../components/common/Pagination";
+import PageHeader from "../../components/layout/PageHeader";
 
 const initialForm = {
   code: "",
@@ -137,32 +138,20 @@ function MasterTakah() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 px-3 py-4 text-[13px] sm:px-4 lg:px-5">
-      <div className="mx-auto w-full max-w-[1180px] space-y-4">
-        <div className="rounded-2xl bg-gradient-to-r from-[#082f5f] via-[#0f5f99] to-[#2b8fd3] p-5 text-white shadow-md sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold text-blue-100">Data Master</p>
-              <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">
-                Master Takah
-              </h1>
-              <p className="mt-2 max-w-2xl text-xs leading-6 text-blue-100 sm:text-sm">
-                Kelola data jenis surat yang digunakan pada sistem Takah.
-              </p>
-            </div>
+ return (
+  <div className="min-h-screen bg-slate-50 px-3 py-4 text-[13px] sm:px-4 lg:px-5">
+    <div className="mx-auto w-full max-w-[1180px] space-y-4">
 
-            <button
-              onClick={handleOpenAddModal}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#004271] shadow-sm transition hover:scale-[1.01] sm:w-auto"
-            >
-              <Plus size={16} />
-              Tambah Master
-            </button>
-          </div>
-        </div>
+      <PageHeader
+        label="Data Master"
+        title="Master Takah"
+        description="Kelola data jenis surat yang digunakan pada sistem Takah."
+        buttonText="Tambah Master"
+        buttonIcon={Plus}
+        onButtonClick={handleOpenAddModal}
+      />
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
@@ -280,8 +269,8 @@ function MasterTakah() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between bg-gradient-to-r from-[#082f5f] to-[#2b8fd3] px-5 py-4 text-white">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between bg-gradient-to-r from-[#002248] to-[#2680BE] px-5 py-4 text-white">
               <div>
                 <h2 className="text-base font-extrabold">
                   {editId ? "Edit Master Takah" : "Tambah Master Takah"}

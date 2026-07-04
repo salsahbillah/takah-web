@@ -25,9 +25,6 @@ import {
 
 import { getAllTemplateSurat } from "../../services/templateSuratService";
 import { getAllParameterSurat } from "../../services/parameterSuratService";
-import Pagination from "../../components/common/Pagination";
-const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 5;
 
 const initialForm = {
   takah_id: "",
@@ -80,9 +77,7 @@ function BuatSurat() {
   useEffect(() => {
     fetchData();
   }, []);
-  useEffect(() => {
-  setCurrentPage(1);
-}, [search, statusFilter]);
+
   const selectedTemplate = templates.find(
     (item) => String(item.id) === String(form.template_id)
   );
@@ -106,12 +101,7 @@ function BuatSurat() {
 
       return matchSearch && matchStatus;
     });
-
   }, [suratList, search, statusFilter]);
-  const paginatedSurat = useMemo(() => {
-  const start = (currentPage - 1) * itemsPerPage;
-  return filteredSurat.slice(start, start + itemsPerPage);
-}, [filteredSurat, currentPage]);
 
   const totalSurat = suratList.length;
   const totalDraft = suratList.filter((item) => item.status === "draft").length;
@@ -507,12 +497,12 @@ function BuatSurat() {
                     </td>
                   </tr>
                 ) : filteredSurat.length > 0 ? (
-                  paginatedSurat.map((item, index) => (
+                  filteredSurat.map((item, index) => (
                     <tr
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-3">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="px-4 py-3">{index + 1}</td>
 
                       <td className="px-4 py-3 font-bold text-slate-900">
                         {item.nomor_surat}
@@ -593,12 +583,6 @@ function BuatSurat() {
                 )}
               </tbody>
             </table>
-            <Pagination
-                currentPage={currentPage}
-                totalItems={filteredSurat.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-                />
           </div>
         </div>
       </div>

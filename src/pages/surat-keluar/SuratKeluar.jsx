@@ -26,6 +26,7 @@ import {
   submitSuratKeluarApproval,
 } from "../../services/suratKeluarService";
 import Pagination from "../../components/common/Pagination";
+import PageHeader from "../../components/layout/PageHeader";
 
 const initialForm = {
   template_id: "",
@@ -53,9 +54,9 @@ function SuratKeluar() {
   const [showDetail, setShowDetail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchSuratKeluar = async () => {
     try {
@@ -94,14 +95,14 @@ function SuratKeluar() {
   };
 
   useEffect(() => {
-  fetchSuratKeluar();
-  fetchTemplates();
-  fetchParameters();
-}, []);
+    fetchSuratKeluar();
+    fetchTemplates();
+    fetchParameters();
+  }, []);
 
-useEffect(() => {
-  setCurrentPage(1);
-}, [search, statusFilter, templateFilter]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, templateFilter]);
 
   const selectedTemplate = useMemo(() => {
     return templates.find(
@@ -128,31 +129,31 @@ useEffect(() => {
   }, [suratKeluar]);
 
   const filteredSuratKeluar = useMemo(() => {
-  return suratKeluar.filter((item) => {
-    const keyword = search.toLowerCase();
+    return suratKeluar.filter((item) => {
+      const keyword = search.toLowerCase();
 
-    const matchSearch =
-      item.nomor_surat?.toLowerCase().includes(keyword) ||
-      item.takah_code?.toLowerCase().includes(keyword) ||
-      item.tujuan_surat?.toLowerCase().includes(keyword) ||
-      item.perihal?.toLowerCase().includes(keyword) ||
-      item.status?.toLowerCase().includes(keyword);
+      const matchSearch =
+        item.nomor_surat?.toLowerCase().includes(keyword) ||
+        item.takah_code?.toLowerCase().includes(keyword) ||
+        item.tujuan_surat?.toLowerCase().includes(keyword) ||
+        item.perihal?.toLowerCase().includes(keyword) ||
+        item.status?.toLowerCase().includes(keyword);
 
-    const matchStatus =
-      statusFilter === "semua" || item.status === statusFilter;
+      const matchStatus =
+        statusFilter === "semua" || item.status === statusFilter;
 
-    const matchTemplate =
-      templateFilter === "semua" ||
-      String(item.takah_id) === String(templateFilter);
+      const matchTemplate =
+        templateFilter === "semua" ||
+        String(item.takah_id) === String(templateFilter);
 
-    return matchSearch && matchStatus && matchTemplate;
-  });
-}, [suratKeluar, search, statusFilter, templateFilter]);
+      return matchSearch && matchStatus && matchTemplate;
+    });
+  }, [suratKeluar, search, statusFilter, templateFilter]);
 
-const paginatedSuratKeluar = useMemo(() => {
-  const start = (currentPage - 1) * itemsPerPage;
-  return filteredSuratKeluar.slice(start, start + itemsPerPage);
-}, [filteredSuratKeluar, currentPage]);
+  const paginatedSuratKeluar = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredSuratKeluar.slice(start, start + itemsPerPage);
+  }, [filteredSuratKeluar, currentPage]);
 
   const handleOpenAddModal = () => {
     setForm(initialForm);
@@ -436,26 +437,22 @@ const paginatedSuratKeluar = useMemo(() => {
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
-      <div className="mx-auto w-full max-w-[1450px] px-2">
-        <div className="mb-4 flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-[#002248] to-[#2680BE] p-4 text-white shadow-md md:flex-row md:items-center">
-          <div>
-            <p className="text-xs text-white/75">Data Surat</p>
-            <h1 className="mt-1 text-xl font-extrabold">Surat Keluar</h1>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/75">
-              Buat dan kelola surat keluar berdasarkan template, parameter, dan
-              nomor surat otomatis.
-            </p>
-          </div>
+      <div className="mx-auto w-full max-w-[1180px]">
+        <PageHeader
 
-          <button
-            type="button"
-            onClick={handleOpenAddModal}
-            className="flex w-fit items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
-          >
-            <Plus size={16} />
-            Tambah Surat
-          </button>
-        </div>
+          label="Data Surat"
+
+          title="Surat Keluar"
+
+          description="Buat dan kelola surat keluar berdasarkan template, parameter, dan nomor surat otomatis."
+
+          buttonText="Tambah Surat"
+
+          buttonIcon={Plus}
+
+          onButtonClick={handleOpenAddModal}
+
+          />
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {summaryCards.map((card) => {
@@ -475,7 +472,7 @@ const paginatedSuratKeluar = useMemo(() => {
                 <p className="mt-4 text-xs font-semibold text-slate-500">
                   {card.title}
                 </p>
-                <h2 className="mt-1 text-xl font-extrabold text-slate-900">
+                <h2 className="mt-1 text-2xl font-extrabold text-slate-900">
                   {card.value}
                 </h2>
               </div>
@@ -539,17 +536,17 @@ const paginatedSuratKeluar = useMemo(() => {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-100 shadow-sm">
-            <table className="w-full min-w-[1100px] border-collapse text-left text-xs">
+            <table className="w-full min-w-[920px] border-collapse text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
-                  <th className="px-4 py-2 font-bold">No</th>
-                  <th className="px-4 py-2 font-bold">Nomor Surat</th>
-                  <th className="px-4 py-2 font-bold">Jenis</th>
-                  <th className="px-4 py-2 font-bold">Tujuan</th>
-                  <th className="px-4 py-2 font-bold">Perihal</th>
-                  <th className="px-4 py-2 font-bold">Tanggal</th>
-                  <th className="px-4 py-2 font-bold">Status</th>
-                  <th className="px-4 py-2 text-right font-bold">Aksi</th>
+                  <th className="px-4 py-3 font-bold">No</th>
+                  <th className="px-4 py-3 font-bold">Nomor Surat</th>
+                  <th className="px-4 py-3 font-bold">Jenis</th>
+                  <th className="px-4 py-3 font-bold">Tujuan</th>
+                  <th className="px-4 py-3 font-bold">Perihal</th>
+                  <th className="px-4 py-3 font-bold">Tanggal</th>
+                  <th className="px-4 py-3 font-bold">Status</th>
+                  <th className="px-4 py-3 text-right font-bold">Aksi</th>
                 </tr>
               </thead>
 
@@ -578,31 +575,33 @@ const paginatedSuratKeluar = useMemo(() => {
                       key={item.id}
                       className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/40"
                     >
-                      <td className="px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="px-4 py-3">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
 
-                      <td className="px-4 py-2 font-extrabold text-slate-900">
+                      <td className="px-4 py-3 font-extrabold text-slate-900">
                         {item.nomor_surat || "-"}
                       </td>
 
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-3">
                         <span className="rounded-lg bg-blue-50 px-3 py-1 font-extrabold text-blue-700">
                           {item.takah_code || "-"}
                         </span>
                       </td>
 
-                      <td className="max-w-[150px] px-4 py-2">
+                      <td className="max-w-[150px] px-4 py-3">
                         <p className="line-clamp-2">
                           {item.tujuan_surat || "-"}
                         </p>
                       </td>
 
-                      <td className="max-w-[180px] px-4 py-2">
+                      <td className="max-w-[180px] px-4 py-3">
                         <p className="line-clamp-2">{item.perihal || "-"}</p>
                       </td>
 
-                      <td className="px-4 py-2">{item.tanggal_surat || "-"}</td>
+                      <td className="px-4 py-3">{item.tanggal_surat || "-"}</td>
 
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-3">
                         <span
                           className={`rounded-full px-3 py-1 text-[11px] font-bold ${getStatusClass(
                             item.status
@@ -612,7 +611,7 @@ const paginatedSuratKeluar = useMemo(() => {
                         </span>
                       </td>
 
-                      <td className="px-4 py-2">
+                      <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
@@ -671,12 +670,12 @@ const paginatedSuratKeluar = useMemo(() => {
             </table>
           </div>
 
-         <Pagination
-              currentPage={currentPage}
-              totalItems={filteredSuratKeluar.length}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-            />
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredSuratKeluar.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 

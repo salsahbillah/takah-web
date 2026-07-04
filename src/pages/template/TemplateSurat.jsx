@@ -18,6 +18,7 @@ import {
   updateTemplateSurat,
 } from "../../services/templateSuratService";
 import Pagination from "../../components/common/Pagination";
+import PageHeader from "../../components/layout/PageHeader";
 
 const initialForm = {
   takah_id: "",
@@ -227,26 +228,17 @@ function TemplateSurat() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-4 text-[13px] lg:px-5 lg:py-5">
       <div className="mx-auto w-full max-w-[1180px]">
-        <div className="mb-4 flex flex-col justify-between gap-4 rounded-2xl bg-gradient-to-r from-[#002248] to-[#2680BE] p-5 text-white shadow-md transition hover:shadow-lg md:flex-row md:items-center">
-          <div>
-            <p className="text-xs text-white/75">Template Surat</p>
-            <h1 className="mt-1 text-xl font-extrabold">Template Surat</h1>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/75">
-              Kelola format isi surat berdasarkan jenis surat. Template ini
-              dapat menggunakan placeholder seperti {"{{nama_tujuan}}"} dan
-              {" {{tanggal}}"}.
-            </p>
-          </div>
+        <PageHeader
 
-          <button
-            type="button"
-            onClick={openAddModal}
-            className="flex w-fit items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-bold text-[#002248] shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
-          >
-            <Plus size={16} />
-            Tambah Template
-          </button>
-        </div>
+            label="Template Surat"
+            title="Parameter Surat"
+            description="Kelola field dinamis yang akan digunakan pada template surat, seperti nama tujuan, tanggal, tempat, jabatan, dan kebutuhan input lainnya."
+            buttonText="Tambah Parameter"
+            buttonIcon={Plus}
+
+            onButtonClick={openAddModal}
+
+          />
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {summaryCards.map((card) => {
