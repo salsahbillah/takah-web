@@ -153,22 +153,6 @@ function Dashboard() {
           textIcon: "text-blue-600",
         },
         {
-          title: "Surat Keluar Saya",
-          value: summary.surat_keluar,
-          icon: Send,
-          path: "/surat-keluar",
-          bgIcon: "bg-emerald-100",
-          textIcon: "text-emerald-600",
-        },
-        {
-          title: "Surat Masuk Saya",
-          value: summary.surat_masuk,
-          icon: Download,
-          path: "/surat-masuk",
-          bgIcon: "bg-purple-100",
-          textIcon: "text-purple-600",
-        },
-        {
           title: "Disetujui",
           value: summary.approval,
           icon: CheckCircle2,
@@ -224,20 +208,6 @@ function Dashboard() {
           icon: FileCheck,
           bgIcon: "bg-blue-100",
           textIcon: "text-blue-600",
-        },
-        {
-          title: "Surat Saya",
-          path: "/monitoring",
-          icon: FileText,
-          bgIcon: "bg-emerald-100",
-          textIcon: "text-emerald-600",
-        },
-        {
-          title: "Surat Masuk Saya",
-          path: "/surat-masuk",
-          icon: FileInput,
-          bgIcon: "bg-purple-100",
-          textIcon: "text-purple-600",
         },
         {
           title: "Profile Saya",
